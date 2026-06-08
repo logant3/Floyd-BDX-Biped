@@ -1,5 +1,5 @@
 # Floyd-IsaacLab
-
+![Floyd](media/Floyd-V1.png)
 Isaac Lab reinforcement learning training configuration for Floyd, a custom BDX-style bipedal robot.
 
 ## Robot
