@@ -1,0 +1,410 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="Floyd_URDF_macro">
+
+  <xacro:macro name="Floyd_URDF" params="prefix">
+
+    <!-- Links -->
+    <link name="${prefix}base_link">
+      <inertial>
+        <origin xyz="0.054317 0.070793 -0.014961" rpy="0 0 0"/>
+        <mass value="5.718477"/>
+        <inertia ixx="3.861110e-02" ixy="-2.971250e-03" ixz="-3.920790e-04"
+                 iyy="2.908375e-02" iyz="-4.972865e-04" izz="4.749894e-02"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/base_link.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Steel"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/base_link_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}HipRollMountLeft">
+      <inertial>
+        <origin xyz="0.029877 -0.000000 -0.002039" rpy="0 0 0"/>
+        <mass value="0.099119"/>
+        <inertia ixx="2.527369e-05" ixy="1.591640e-17" ixz="-1.343212e-05"
+                 iyy="1.022096e-04" iyz="6.665319e-18" izz="1.100274e-04"/>
+      </inertial>
+      <visual>
+        <origin xyz="-0.000000 0.000000 -0.047500" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountLeft.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Aluminum"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.000000 0.000000 -0.047500" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountLeft_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}HipRollMountRight">
+      <inertial>
+        <origin xyz="0.029877 -0.000000 0.002039" rpy="0 0 0"/>
+        <mass value="0.099119"/>
+        <inertia ixx="2.527369e-05" ixy="1.623018e-17" ixz="1.343212e-05"
+                 iyy="1.022096e-04" iyz="-6.557230e-18" izz="1.100274e-04"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.000000 -0.000000 0.047500" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountRight.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Aluminum"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000000 -0.000000 0.047500" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountRight_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}RS03_LeftHipPitch">
+      <inertial>
+        <origin xyz="-0.001013 -0.055597 -0.026110" rpy="0 0 0"/>
+        <mass value="2.310484"/>
+        <inertia ixx="9.421651e-03" ixy="2.563820e-06" ixz="-8.561347e-06"
+                 iyy="2.539521e-03" iyz="-1.257142e-05" izz="1.029192e-02"/>
+      </inertial>
+      <visual>
+        <origin xyz="-0.000000 0.000000 -0.056600" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_LeftHipPitch.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Steel"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.000000 0.000000 -0.056600" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_LeftHipPitch_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}RS03_RightKneePitch">
+      <inertial>
+        <origin xyz="-0.001058 -0.055597 0.026110" rpy="0 0 0"/>
+        <mass value="2.310491"/>
+        <inertia ixx="9.421679e-03" ixy="7.042172e-06" ixz="1.046711e-05"
+                 iyy="2.539315e-03" iyz="1.257940e-05" izz="1.029174e-02"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.000000 -0.111000 0.056600" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_RightKneePitch.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Steel"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000000 -0.111000 0.056600" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_RightKneePitch_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}RS02_LeftAnklePitch">
+      <inertial>
+        <origin xyz="0.123268 0.034558 -0.019822" rpy="0 0 0"/>
+        <mass value="1.636213"/>
+        <inertia ixx="8.807747e-04" ixy="-3.455211e-04" ixz="4.537411e-05"
+                 iyy="2.698350e-03" iyz="8.623581e-06" izz="3.145175e-03"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.135254 0.036254 -0.001500" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_LeftAnklePitch.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Steel"/>
+      </visual>
+      <collision>
+        <origin xyz="0.135254 0.036254 -0.001500" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_LeftAnklePitch_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}RS02_RightAnklePitch">
+      <inertial>
+        <origin xyz="0.123268 0.034558 0.019822" rpy="0 0 0"/>
+        <mass value="1.636213"/>
+        <inertia ixx="8.807746e-04" ixy="-3.455211e-04" ixz="-4.537409e-05"
+                 iyy="2.698350e-03" iyz="-8.623566e-06" izz="3.145175e-03"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.135254 0.036254 0.001500" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_RightAnklePitch.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Steel"/>
+      </visual>
+      <collision>
+        <origin xyz="0.135254 0.036254 0.001500" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_RightAnklePitch_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}FootPadLeft">
+      <inertial>
+        <origin xyz="-0.017141 -0.026650 -0.066391" rpy="0 0 0"/>
+        <mass value="0.952416"/>
+        <inertia ixx="2.401400e-03" ixy="-1.567175e-05" ixz="-7.502641e-05"
+                 iyy="3.769323e-04" iyz="-1.510958e-05" izz="2.338204e-03"/>
+      </inertial>
+      <visual>
+        <origin xyz="-0.118071 -0.138154 0.226886" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootPadLeft.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Steel"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.118071 -0.138154 0.226886" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootPadLeft_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}FootBaseRight">
+      <inertial>
+        <origin xyz="-0.008444 -0.024088 0.043158" rpy="0 0 0"/>
+        <mass value="0.129340"/>
+        <inertia ixx="3.556114e-04" ixy="-7.520558e-06" ixz="2.395612e-05"
+                 iyy="9.836110e-05" iyz="1.249472e-05" izz="3.254246e-04"/>
+      </inertial>
+      <visual>
+        <origin xyz="-0.118071 -0.137704 -0.226786" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootBaseRight.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="PET_Plastic"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.118071 -0.137704 -0.226786" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootBaseRight_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}FootCoverRight">
+      <inertial>
+        <origin xyz="0.115669 0.090146 0.256187" rpy="0 0 0"/>
+        <mass value="0.025807"/>
+        <inertia ixx="7.466704e-05" ixy="-1.362016e-05" ixz="3.315386e-06"
+                 iyy="2.186690e-05" iyz="1.020217e-05" izz="7.251843e-05"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootCoverRight.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="PET_Plastic"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootCoverRight_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${prefix}FootPadRight">
+      <inertial>
+        <origin xyz="0.099043 0.111762 0.298242" rpy="0 0 0"/>
+        <mass value="0.797489"/>
+        <inertia ixx="1.834695e-03" ixy="-3.959480e-08" ixz="-9.508132e-08"
+                 iyy="1.142863e-04" iyz="5.510822e-06" izz="1.909957e-03"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootPadRight.dae" scale="1 1 1"/>
+        </geometry>
+        <material name="Steel"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootPadRight_collision.stl" scale="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Joints (internal to assembly) -->
+    <joint name="${prefix}LeftHipRoll" type="continuous">
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}HipRollMountLeft"/>
+      <origin xyz="0.098165 0.045368 0.036300" rpy="-0.000000 -1.570795 -1.570796"/>
+      <axis xyz="-0.000000 0.000000 -1.000000"/>
+      <limit effort="100.0" velocity="1.00"/>
+    </joint>
+
+    <joint name="${prefix}RightHipRoll" type="continuous">
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}HipRollMountRight"/>
+      <origin xyz="0.098165 0.045368 -0.063700" rpy="-3.141593 1.570795 1.570796"/>
+      <axis xyz="-0.000000 -0.000000 1.000000"/>
+      <limit effort="100.0" velocity="1.00"/>
+    </joint>
+
+    <joint name="${prefix}LeftHipPitch" type="continuous">
+      <parent link="${prefix}HipRollMountLeft"/>
+      <child link="${prefix}RS03_LeftHipPitch"/>
+      <origin xyz="0.071250 -0.000000 0.012092" rpy="-1.570796 0.698132 1.570796"/>
+      <axis xyz="-0.000000 0.000000 -1.000000"/>
+      <limit effort="100.0" velocity="1.00"/>
+    </joint>
+
+    <joint name="${prefix}RightHipPitch" type="continuous">
+      <parent link="${prefix}HipRollMountRight"/>
+      <child link="${prefix}RS03_RightKneePitch"/>
+      <origin xyz="0.071250 -0.000000 -0.012092" rpy="1.570796 -0.698132 1.570796"/>
+      <axis xyz="-0.000000 -0.000000 1.000000"/>
+      <limit effort="100.0" velocity="1.00"/>
+    </joint>
+
+    <joint name="${prefix}LeftKneePitch" type="continuous">
+      <parent link="${prefix}RS03_LeftHipPitch"/>
+      <child link="${prefix}RS02_LeftAnklePitch"/>
+      <origin xyz="0.000000 -0.111000 -0.000000" rpy="3.141593 -0.000000 -0.261799"/>
+      <axis xyz="0.000000 0.000000 -1.000000"/>
+      <limit effort="100.0" velocity="1.00"/>
+    </joint>
+
+    <joint name="${prefix}RightKneePitch" type="continuous">
+      <parent link="${prefix}RS03_RightKneePitch"/>
+      <child link="${prefix}RS02_RightAnklePitch"/>
+      <origin xyz="0.000000 -0.111000 0.000000" rpy="-3.141593 -0.000000 -0.261799"/>
+      <axis xyz="0.000000 -0.000000 -1.000000"/>
+      <limit effort="100.0" velocity="1.00"/>
+    </joint>
+
+    <joint name="${prefix}LeftAnklePitch" type="continuous">
+      <parent link="${prefix}RS02_LeftAnklePitch"/>
+      <child link="${prefix}FootPadLeft"/>
+      <origin xyz="0.135254 0.036254 0.002500" rpy="0.436332 -1.570796 0.000000"/>
+      <axis xyz="1.000000 -0.000000 -0.000000"/>
+      <limit effort="100.0" velocity="1.00"/>
+    </joint>
+
+    <joint name="${prefix}RightAnklePitch" type="continuous">
+      <parent link="${prefix}RS02_RightAnklePitch"/>
+      <child link="${prefix}FootBaseRight"/>
+      <origin xyz="0.135254 0.036254 -0.002500" rpy="-0.436332 1.570796 0.000000"/>
+      <axis xyz="-1.000000 0.000000 0.000000"/>
+      <limit effort="100.0" velocity="1.00"/>
+    </joint>
+
+    <joint name="${prefix}Rigid_45" type="fixed">
+      <parent link="${prefix}FootBaseRight"/>
+      <child link="${prefix}FootCoverRight"/>
+      <origin xyz="-0.118071 -0.137704 -0.226786" rpy="-0.000000 0.000000 -0.000000"/>
+    </joint>
+
+    <joint name="${prefix}Rigid_46" type="fixed">
+      <parent link="${prefix}FootBaseRight"/>
+      <child link="${prefix}FootPadRight"/>
+      <origin xyz="-0.118071 -0.138154 -0.226886" rpy="-0.000000 0.000000 -0.000000"/>
+    </joint>
+
+    <!-- ROS 2 control: generated generic system -->
+    <ros2_control name="${prefix}Floyd_URDF_system" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+        <param name="cmd_topic">sim/Floyd_URDF_system/cmd</param>
+        <param name="state_topic">sim/Floyd_URDF_system/state</param>
+      </hardware>
+
+      <joint name="${prefix}LeftAnklePitch">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="${prefix}LeftHipPitch">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="${prefix}LeftHipRoll">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="${prefix}LeftKneePitch">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="${prefix}RightAnklePitch">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="${prefix}RightHipPitch">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="${prefix}RightHipRoll">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="${prefix}RightKneePitch">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+    </ros2_control>
+
+  </xacro:macro>
+
+</robot>
