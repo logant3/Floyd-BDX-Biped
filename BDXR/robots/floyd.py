@@ -1,18 +1,21 @@
 from pathlib import Path
 import isaaclab.sim as sim_utils
-from isaaclab.actuators import ImplicitActuatorCfg, DelayedPDActuatorCfg
+from isaaclab.actuators import DelayedPDActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
 
 ##
 # Configuration
 ##
 
-FLOYD_ASSETS_DIR = Path(__file__).resolve().parent
-
 FLOYD_CFG = ArticulationCfg(
-    spawn=sim_utils.UsdFileCfg(
-        usd_path=str(Path("C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd-BDX.usd")),
+    spawn=sim_utils.UrdfFileCfg(
+        asset_path="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/urdf/Floyd_URDF.urdf",
+        fix_base=False,
+        merge_fixed_joints=True,
         activate_contact_sensors=True,
+        joint_drive=sim_utils.UrdfConverterCfg.JointDriveCfg(
+            gains=sim_utils.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=0, damping=0)
+        ),
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             retain_accelerations=False,
@@ -30,7 +33,6 @@ FLOYD_CFG = ArticulationCfg(
     ),
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.35),
-        # 0,0,0 = standing crouch — baked into URDF joint zeros
         joint_pos={
             "LeftHipRoll": 0.0,
             "RightHipRoll": 0.0,
