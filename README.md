@@ -1,21 +1,14 @@
 # Floyd-IsaacLab
 
-Isaac Lab training configuration for Floyd, a BDX-style bipedal robot.
+Isaac Lab reinforcement learning training configuration for Floyd, a custom BDX-style bipedal robot.
 
 ## Robot
-- 8 DOF (no hip yaw): Hip Roll, Hip Pitch, Knee Pitch, Ankle Pitch per leg
-- RS03 actuators: Hip Roll, Hip Pitch, Knee Pitch
-- RS02 actuators: Ankle Pitch
-- USD: `data/Robots/Floyd/Floyd-BDX.usd`
+- 8 DOF biped (no hip yaw): Hip Roll, Hip Pitch, Knee Pitch, Ankle Pitch per leg
+- RS03 actuators on Hip Roll, Hip Pitch, Knee Pitch
+- RS02 actuators on Ankle Pitch
+- ~10.5kg total weight
 
-## Training
-```bash
-conda activate env_isaaclab
-cd C:\Users\logan\IsaacLab
-python C:\Users\logan\Floyd-IsaacLab\scripts\train.py --task Floyd-Velocity-Flat-v0 --num_envs 4096
-```
+## Acknowledgements
 
-## Play
-```bash
-python C:\Users\logan\Floyd-IsaacLab\scripts\play.py --task Floyd-Velocity-Flat-Play-v0 --num_envs 50
-```
+- **[Kayden Knapik / BDX-R](https://github.com/BDX-R/BDX-R-IsaacLab)** — Training architecture and environment setup heavily based on his open-source BDX-R project.
+- **[NVIDIA Isaac Lab](https://github.com/isaac-sim/IsaacLab)** — Simulation and RL training framework.
