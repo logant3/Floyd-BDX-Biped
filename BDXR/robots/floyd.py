@@ -32,7 +32,7 @@ FLOYD_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.35),
+        pos=(0.0, 0.0, 0.07),
         joint_pos={
             "LeftHipRoll": 0.0,
             "RightHipRoll": 0.0,
