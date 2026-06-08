@@ -12,8 +12,9 @@ from BDXR.robots.floyd import FLOYD_CFG  # isort:skip
 import BDXR.tasks.bdxr_locomotion.mdp as floyd_mdp  # isort:skip
 
 # After URDF import with merge_fixed_joints=True:
-# FootCoverRight + FootPadRight merged into FootBaseRight
-# base_link merged into world
+# All fixed joints merge into their revolute parents
+# Contact bodies: FootPadLeft, FootPadRight (terminal foot links)
+# Base body: world (base_link + all torso fixed links merge into world)
 FOOT_BODIES = ["FootPadLeft", "FootPadRight"]
 BASE_BODY = "world"
 
@@ -156,6 +157,7 @@ class FloydEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.rewards.ang_vel_xy_l2.weight = -0.05
 
         # Forward only — no sideways, no turning to start
+        self.commands.base_velocity.heading_command = False
         self.commands.base_velocity.ranges.lin_vel_x = (0.3, 0.8)
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
