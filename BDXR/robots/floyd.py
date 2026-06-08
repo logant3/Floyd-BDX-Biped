@@ -66,6 +66,6 @@ FLOYD_CFG = ArticulationCfg(
             max_delay=0,
         ),
     },
-    soft_joint_pos_limit_factor=0.95,
+    soft_joint_pos_limit_factor=0.85,
 )
 """Configuration for the Floyd BDX-style biped robot."""
