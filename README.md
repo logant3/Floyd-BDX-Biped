@@ -12,3 +12,4 @@ Isaac Lab reinforcement learning training configuration for Floyd, a custom BDX-
 
 - **[Kayden Knapik / BDX-R](https://github.com/BDX-R/BDX-R-IsaacLab)** — Training architecture and environment setup heavily based on his open-source BDX-R project.
 - **[NVIDIA Isaac Lab](https://github.com/isaac-sim/IsaacLab)** — Simulation and RL training framework.
+- **[PCBWay](https://www.pcbway.com)** — Manufactured the power bus PCB. Disclosure: PCBWay offered a discount in exchange for this shoutout.
