@@ -9,7 +9,7 @@ from isaaclab.assets.articulation import ArticulationCfg
 
 FLOYD_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
-        asset_path="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/urdf/Floyd_URDF.urdf",
+        asset_path=str(Path(__file__).parent.parent.parent / "robot_description" / "urdf" / "Floyd_URDF.urdf"),
         fix_base=False,
         merge_fixed_joints=True,
         activate_contact_sensors=True,
@@ -32,7 +32,7 @@ FLOYD_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.07),
+        pos=(0.0, 0.0, 0.13),
         joint_pos={
             "LeftHipRoll": 0.0,
             "RightHipRoll": 0.0,
