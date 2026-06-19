@@ -28,6 +28,25 @@ if TYPE_CHECKING:
 ##
 
 
+def both_feet_air_penalty(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    threshold: float,
+) -> torch.Tensor:
+    """Penalize when both feet are simultaneously off the ground (jumping/hopping).
+
+    This discourages the policy from discovering jumping as a local optimum
+    before learning to walk with alternating foot contact.
+    """
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    net_contact_forces = contact_sensor.data.net_forces_w_history
+    # True where foot is in contact (force above threshold)
+    is_contact = torch.max(torch.norm(net_contact_forces[:, :, sensor_cfg.body_ids], dim=-1), dim=1)[0] > threshold
+    # Penalize when neither foot is in contact
+    both_in_air = ~is_contact[:, 0] & ~is_contact[:, 1]
+    return both_in_air.float()
+
+
 def bipedal_air_time_reward(
     env: ManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg,
@@ -189,14 +208,42 @@ class GaitReward(ManagerTermBase):
 
 
 def foot_clearance_reward(
-    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, target_height: float, std: float, tanh_mult: float
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, target_height: float, std: float, tanh_mult: float,
+    lin_vel_threshold: float = 0.15,
 ) -> torch.Tensor:
-    """Reward the swinging feet for clearing a specified height off the ground"""
+    """Reward the swinging feet for clearing a specified height off the ground.
+
+    Gated on linear velocity command so it does not fire during pure yaw turns —
+    feet should stay flat when spinning in place.
+    """
     asset: RigidObject = env.scene[asset_cfg.name]
     foot_z_target_error = torch.square(asset.data.body_pos_w[:, asset_cfg.body_ids, 2] - target_height)
     foot_velocity_tanh = torch.tanh(tanh_mult * torch.norm(asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2], dim=2))
     reward = foot_z_target_error * foot_velocity_tanh
-    return torch.exp(-torch.sum(reward, dim=1) / std)
+    base_reward = torch.exp(-torch.sum(reward, dim=1) / std)
+    # Gate: only active when robot has meaningful linear velocity command
+    lin_vel_cmd = torch.norm(env.command_manager.get_command("base_velocity")[:, :2], dim=1)
+    lin_scale = torch.clamp(lin_vel_cmd / lin_vel_threshold, 0.0, 1.0)
+    return base_reward * lin_scale
+
+
+def ankle_angle_penalty(
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, yaw_threshold: float = 0.1, lin_vel_threshold: float = 0.15,
+) -> torch.Tensor:
+    """Penalize ankle pitch away from 0 during yaw-dominant motion (turning in place).
+
+    During pure yaw turns the ankle should stay flat — toe-lift causes balance issues.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    cmd = env.command_manager.get_command("base_velocity")
+    lin_vel_cmd = torch.norm(cmd[:, :2], dim=1)
+    yaw_cmd = torch.abs(cmd[:, 2])
+    # Scale penalty by how yaw-dominant the command is (high yaw, low linear)
+    yaw_scale = torch.clamp(yaw_cmd / yaw_threshold, 0.0, 1.0)
+    lin_scale = 1.0 - torch.clamp(lin_vel_cmd / lin_vel_threshold, 0.0, 1.0)
+    gate = yaw_scale * lin_scale
+    ankle_deviation = torch.sum(torch.abs(asset.data.joint_pos[:, asset_cfg.joint_ids]), dim=1)
+    return gate * ankle_deviation
 
 
 ##

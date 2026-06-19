@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <authoring_tool>Fusion URDF/XACRO Exporter</authoring_tool>
+    </contributor>
+    <created>2026-06-08T18:29:27Z</created>
+    <modified>2026-06-08T18:29:27Z</modified>
+    <unit name="meter" meter="1.0"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="Plastic_-_Matte__Gray_-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission><color>0 0 0 1</color></emission>
+            <ambient><color>0.0000 0.0000 0.0000 1</color></ambient>
+            <diffuse><color>0.7020 0.7020 0.7020 1</color></diffuse>
+            <reflective><color>0 0 0 1</color></reflective>
+            <transparent opaque="A_ONE"><color>1 1 1 1</color></transparent>
+            <transparency><float>1</float></transparency>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="Plastic_-_Matte__Gray_" name="Plastic_-_Matte_(Gray)">
+      <instance_effect url="#Plastic_-_Matte__Gray_-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Battery-mesh" name="Battery">
+      <mesh>
+        <source id="Battery-mesh-positions">
+          <float_array id="Battery-mesh-positions-array" count="24">-0.052050 0.073057 -0.203750 -0.052050 0.243057 -0.203750 0.051950 0.243057 -0.203750 0.051950 0.073057 -0.203750 -0.052050 0.243057 -0.123750 0.051950 0.243057 -0.123750 -0.052050 0.073057 -0.123750 0.051950 0.073057 -0.123750</float_array>
+          <technique_common>
+            <accessor source="#Battery-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Battery-mesh-normals">
+          <float_array id="Battery-mesh-normals-array" count="72">-0.000000 0.000000 -1.000000 -0.000000 0.000000 -1.000000 -0.000000 0.000000 -1.000000 -0.000000 0.000000 -1.000000 0.000000 1.000000 0.000000 0.000000 1.000000 0.000000 0.000000 1.000000 0.000000 0.000000 1.000000 0.000000 -1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 -1.000000 -0.000000 0.000000 -1.000000 -0.000000 0.000000 -1.000000 -0.000000 0.000000 -1.000000 -0.000000 1.000000 -0.000000 -0.000000 1.000000 -0.000000 -0.000000 1.000000 -0.000000 -0.000000 1.000000 -0.000000 -0.000000 -0.000000 -0.000000 1.000000 -0.000000 -0.000000 1.000000 -0.000000 -0.000000 1.000000 -0.000000 -0.000000 1.000000</float_array>
+          <technique_common>
+            <accessor source="#Battery-mesh-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Battery-mesh-vertices">
+          <input semantic="POSITION" source="#Battery-mesh-positions"/>
+        </vertices>
+        <triangles material="Plastic_-_Matte__Gray_" count="12">
+          <input semantic="VERTEX" source="#Battery-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Battery-mesh-normals" offset="1"/>
+          <p>1 0 2 1 0 2 0 2 2 1 3 3 2 4 1 5 5 6 5 6 1 5 4 7 1 8 0 9 4 10 4 10 0 9 6 11 0 12 3 13 6 14 6 14 3 13 7 15 3 16 2 17 7 18 7 18 2 17 5 19 6 20 7 21 4 22 4 22 7 21 5 23</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Battery-node" name="Battery" type="NODE">
+        <instance_geometry url="#Battery-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Plastic_-_Matte__Gray_" target="#Plastic_-_Matte__Gray_"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

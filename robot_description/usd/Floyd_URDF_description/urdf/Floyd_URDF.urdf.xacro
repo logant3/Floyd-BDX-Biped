@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="Floyd_URDF">
+
+  <!-- Materials (shared across all assemblies) -->
+  <material name="PET_Plastic">
+    <color rgba="0.098 0.098 0.098 1.0"/>
+  </material>
+  <material name="Steel">
+    <color rgba="0.627 0.627 0.627 1.0"/>
+  </material>
+  <material name="ABS_Plastic">
+    <color rgba="0.702 0.702 0.702 1.0"/>
+  </material>
+  <material name="Aluminum">
+    <color rgba="0.961 0.961 0.965 1.0"/>
+  </material>
+
+  <!-- Assembly includes -->
+  <xacro:include filename="$(find Floyd_URDF_description)/urdf/assemblies/Floyd_URDF.urdf.xacro"/>
+
+  <!-- Instantiate assemblies -->
+  <xacro:Floyd_URDF prefix=""/>
+
+</robot>

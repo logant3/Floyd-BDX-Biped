@@ -9,7 +9,7 @@
   <link name="world"/>
   <joint name="world_to_base" type="fixed">
     <parent link="world"/><child link="base_link"/>
-    <origin xyz="0 0 0.07" rpy="1.5708 0 0"/>
+    <origin xyz="0 0 0.07" rpy="1.5708 0 1.5708"/>
   </joint>
 
   <link name="base_link">
@@ -25,7 +25,7 @@
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><box size="0.26 0.27 0.22"/></geometry>
+      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/base_link_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
@@ -662,14 +662,14 @@
     <parent link="RS03_LeftHipRoll"/><child link="HipRollMountLeft"/>
     <origin xyz="0.000000 -0.000000 0.056600" rpy="3.141593 0.000000 1.570796"/>
     <axis xyz="-0.000000 0.000000 -1.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.3491" upper="0.3491" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="RightHipRoll" type="revolute">
     <parent link="RS03_RightHipRoll"/><child link="HipRollMountRight"/>
     <origin xyz="0.000000 -0.000000 0.056600" rpy="-0.000000 0.000000 1.570796"/>
     <axis xyz="-0.000000 -0.000000 1.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.3491" upper="0.3491" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="Rigid_56" type="fixed">
@@ -691,14 +691,14 @@
     <parent link="HipRollMountLeft"/><child link="RS03_LeftHipPitch"/>
     <origin xyz="0.071250 -0.000000 0.012093" rpy="-1.570796 0.698132 1.570796"/>
     <axis xyz="-0.000000 0.000000 -1.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-1.0472" upper="0.6981" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="RightHipPitch" type="revolute">
     <parent link="HipRollMountRight"/><child link="RS03_RightHipPitch"/>
     <origin xyz="0.071250 -0.000000 -0.012092" rpy="1.570796 0.698132 -1.570796"/>
     <axis xyz="0.000000 0.000000 -1.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.6981" upper="1.0472" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="Rigid_59" type="fixed">
@@ -735,14 +735,14 @@
     <parent link="RS03_LeftKneePitch"/><child link="LowerLegLeft"/>
     <origin xyz="-0.000000 -0.000000 0.056600" rpy="-1.047198 1.570796 0.000000"/>
     <axis xyz="-1.000000 0.000000 0.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.1745" upper="1.0472" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="RightKneePitch" type="revolute">
     <parent link="RS03_RightKneePitch"/><child link="LowerLegRight"/>
     <origin xyz="0.000000 0.000000 -0.056600" rpy="1.047198 -1.570796 0.000000"/>
     <axis xyz="1.000000 -0.000000 0.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.1745" upper="1.0472" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="Rigid_23" type="fixed">
@@ -759,14 +759,14 @@
     <parent link="RS02_LeftAnklePitch"/><child link="FootBaseLeft"/>
     <origin xyz="0.000000 0.000000 0.004000" rpy="0.436332 -1.570796 0.000000"/>
     <axis xyz="1.000000 0.000000 -0.000000"/>
-    <limit lower="" upper="" effort="17.0" velocity="43.0"/>
+    <limit lower="-0.5236" upper="1.2217" effort="17.0" velocity="43.0"/>
   </joint>
 
   <joint name="RightAnklePitch" type="revolute">
     <parent link="RS02_RightAnklePitch"/><child link="FootBaseRight"/>
     <origin xyz="0.000000 -0.000000 -0.004000" rpy="-0.436332 1.570796 0.000000"/>
     <axis xyz="-1.000000 -0.000000 -0.000000"/>
-    <limit lower="" upper="" effort="17.0" velocity="43.0"/>
+    <limit lower="-0.5236" upper="1.2217" effort="17.0" velocity="43.0"/>
   </joint>
 
   <joint name="Rigid_21" type="fixed">

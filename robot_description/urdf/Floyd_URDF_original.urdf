@@ -25,7 +25,7 @@
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><box size="0.26 0.27 0.22"/></geometry>
+      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/base_link_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 

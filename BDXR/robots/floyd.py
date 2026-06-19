@@ -9,7 +9,7 @@ from isaaclab.assets.articulation import ArticulationCfg
 
 FLOYD_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
-        asset_path=str(Path(__file__).parent.parent.parent / "robot_description" / "urdf" / "Floyd_URDF.urdf"),
+        asset_path="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/urdf/Floyd_URDF.urdf",
         fix_base=False,
         merge_fixed_joints=True,
         activate_contact_sensors=True,
@@ -32,7 +32,7 @@ FLOYD_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.13),
+        pos=(0.0, 0.0, 0.12),
         joint_pos={
             "LeftHipRoll": 0.0,
             "RightHipRoll": 0.0,
@@ -45,20 +45,22 @@ FLOYD_CFG = ArticulationCfg(
         },
     ),
     actuators={
+        # RS03 joints — exact gains from Kayden's policy.yaml and config.py
         "legs_RS03": DelayedPDActuatorCfg(
             joint_names_expr=[".*HipRoll", ".*HipPitch", ".*KneePitch"],
-            stiffness=15.92966,
-            damping=0.00637,
+            stiffness=78.957,
+            damping=5.027,
             armature=0.02,
             effort_limit_sim=60.0,
             velocity_limit_sim=18.849,
             min_delay=0,
             max_delay=0,
         ),
+        # RS02 joints — exact gains from Kayden's policy.yaml and config.py
         "legs_RS02": DelayedPDActuatorCfg(
             joint_names_expr=[".*AnklePitch"],
-            stiffness=3.34728,
-            damping=0.00134,
+            stiffness=16.581,
+            damping=1.056,
             armature=0.0042,
             effort_limit_sim=17.0,
             velocity_limit_sim=37.699,
@@ -66,6 +68,6 @@ FLOYD_CFG = ArticulationCfg(
             max_delay=0,
         ),
     },
-    soft_joint_pos_limit_factor=0.85,
+    soft_joint_pos_limit_factor=0.95,
 )
 """Configuration for the Floyd BDX-style biped robot."""
