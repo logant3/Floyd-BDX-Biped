@@ -95,15 +95,6 @@ class FloydRewards(RewardsCfg):
         },
     )
 
-    ankle_yaw_penalty = RewTerm(
-        func=floyd_mdp.ankle_angle_penalty,
-        weight=-2.0,
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=[".*AnklePitch"]),
-            "yaw_threshold": 0.1,
-            "lin_vel_threshold": 0.15,
-        },
-    )
 
 
 @configclass
