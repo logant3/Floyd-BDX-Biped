@@ -39,7 +39,7 @@ class FloydRewards(RewardsCfg):
 
     joint_deviation_hip = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-2.0,
+        weight=-0.5,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*HipRoll"])},
     )
 
@@ -49,7 +49,7 @@ class FloydRewards(RewardsCfg):
         params={
             "std": 0.05,
             "tanh_mult": 2.0,
-            "target_height": 0.1,
+            "target_height": 0.15,
             "asset_cfg": SceneEntityCfg("robot", body_names=FOOT_BODIES),
         },
     )
