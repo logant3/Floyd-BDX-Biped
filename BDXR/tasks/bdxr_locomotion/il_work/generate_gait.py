@@ -111,8 +111,8 @@ def generate_clip(robot, vx, vy, vtheta, n_cycles, cycle_time, dt):
         robot.set_joint(name, 0.0)
     robot.update_kinematics()
 
-    lf0 = robot.get_T_world_fbase("FootBaseLeft")[:3, 3].copy();  lf0[2] = 0.0
-    rf0 = robot.get_T_world_fbase("FootBaseRight")[:3, 3].copy(); rf0[2] = 0.0
+    lf0 = robot.get_T_world_frame("FootBaseLeft")[:3, 3].copy();  lf0[2] = 0.0
+    rf0 = robot.get_T_world_frame("FootBaseRight")[:3, 3].copy(); rf0[2] = 0.0
     base0 = np.array([0.0, 0.0, BASE_HEIGHT])
 
     n_steps = int(n_cycles * cycle_time / dt)
