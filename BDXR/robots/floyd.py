@@ -45,7 +45,7 @@ FLOYD_CFG = ArticulationCfg(
         },
     ),
     actuators={
-        # RS03 joints — exact gains from Kayden's policy.yaml and config.py
+        # RS03 joints (hip roll, hip pitch, knee)
         "legs_RS03": DelayedPDActuatorCfg(
             joint_names_expr=[".*hip_roll", ".*hip_pitch", ".*knee"],
             stiffness=78.957,
@@ -56,7 +56,7 @@ FLOYD_CFG = ArticulationCfg(
             min_delay=0,
             max_delay=0,
         ),
-        # RS02 joints — exact gains from Kayden's policy.yaml and config.py
+        # RS02 joints (ankle)
         "legs_RS02": DelayedPDActuatorCfg(
             joint_names_expr=[".*ankle"],
             stiffness=16.581,

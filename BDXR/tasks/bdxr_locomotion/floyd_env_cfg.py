@@ -21,7 +21,7 @@ class FloydRewards(RewardsCfg):
 
     air_time = RewTerm(
         func=floyd_mdp.bipedal_air_time_reward,
-        weight=5.0,
+        weight=8.0,
         params={
             "mode_time": 0.15,
             "velocity_threshold": 0.5,
@@ -45,11 +45,11 @@ class FloydRewards(RewardsCfg):
 
     foot_clearance = RewTerm(
         func=floyd_mdp.foot_clearance_reward,
-        weight=1.0,
+        weight=3.0,
         params={
             "std": 0.05,
             "tanh_mult": 2.0,
-            "target_height": 0.1,
+            "target_height": 0.15,
             "asset_cfg": SceneEntityCfg("robot", body_names=FOOT_BODIES),
         },
     )
@@ -71,7 +71,7 @@ class FloydRewards(RewardsCfg):
 
     foot_slip = RewTerm(
         func=floyd_mdp.foot_slip_penalty,
-        weight=-0.5,
+        weight=-2.0,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=FOOT_BODIES),
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FOOT_BODIES),
@@ -115,7 +115,7 @@ class FloydEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         self.actions.joint_pos.scale = 0.5
 
-        # Critical for sim-to-real: match deployment obs scaling in Kayden's config.py
+        # Obs scaling matched to deployment config for sim-to-real transfer
         self.observations.policy.base_ang_vel.scale = 0.2
         self.observations.policy.joint_vel.scale = 0.05
 
