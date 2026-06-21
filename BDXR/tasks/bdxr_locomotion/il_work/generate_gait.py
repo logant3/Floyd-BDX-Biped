@@ -54,14 +54,14 @@ VELOCITY_CLIPS = [
 # URDF joint name → placo/poly order index
 # Poly order: [L_roll, L_pitch, L_knee, L_ankle, R_roll, R_pitch, R_knee, R_ankle]
 URDF_JOINTS = {
-    "left_roll":   "LeftHipRoll",
-    "left_pitch":  "LeftHipPitch",
-    "left_knee":   "LeftKneePitch",
-    "left_ankle":  "LeftAnklePitch",
-    "right_roll":  "RightHipRoll",
-    "right_pitch": "RightHipPitch",
-    "right_knee":  "RightKneePitch",
-    "right_ankle": "RightAnklePitch",
+    "left_roll":   "left_hip_roll",
+    "left_pitch":  "left_hip_pitch",
+    "left_knee":   "left_knee",
+    "left_ankle":  "left_ankle",
+    "right_roll":  "right_hip_roll",
+    "right_pitch": "right_hip_pitch",
+    "right_knee":  "right_knee",
+    "right_ankle": "right_ankle",
 }
 JOINT_ORDER = list(URDF_JOINTS.keys())  # canonical poly order
 
