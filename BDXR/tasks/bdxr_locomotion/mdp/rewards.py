@@ -220,7 +220,8 @@ def foot_clearance_reward(
     foot_z_target_error = torch.square(asset.data.body_pos_w[:, asset_cfg.body_ids, 2] - target_height)
     foot_velocity_tanh = torch.tanh(tanh_mult * torch.norm(asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2], dim=2))
     reward = foot_z_target_error * foot_velocity_tanh
-    base_reward = torch.exp(-torch.sum(reward, dim=1) / std)
+    # Evaluate each foot independently so one dragging foot can't hide behind the other
+    base_reward = torch.sum(torch.exp(-reward / std), dim=1)
     # Gate: only active when robot has meaningful linear velocity command
     lin_vel_cmd = torch.norm(env.command_manager.get_command("base_velocity")[:, :2], dim=1)
     lin_scale = torch.clamp(lin_vel_cmd / lin_vel_threshold, 0.0, 1.0)

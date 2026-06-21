@@ -21,7 +21,7 @@ class FloydRewards(RewardsCfg):
 
     air_time = RewTerm(
         func=floyd_mdp.bipedal_air_time_reward,
-        weight=8.0,
+        weight=5.0,
         params={
             "mode_time": 0.15,
             "velocity_threshold": 0.5,
@@ -34,22 +34,22 @@ class FloydRewards(RewardsCfg):
     dof_pos_limits = RewTerm(
         func=mdp.joint_pos_limits,
         weight=-1.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*AnklePitch")},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*ankle")},
     )
 
     joint_deviation_hip = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.5,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*HipRoll"])},
+        weight=-2.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*hip_roll"])},
     )
 
     foot_clearance = RewTerm(
         func=floyd_mdp.foot_clearance_reward,
-        weight=2.0,
+        weight=1.0,
         params={
             "std": 0.05,
             "tanh_mult": 2.0,
-            "target_height": 0.15,
+            "target_height": 0.1,
             "asset_cfg": SceneEntityCfg("robot", body_names=FOOT_BODIES),
         },
     )
@@ -71,7 +71,7 @@ class FloydRewards(RewardsCfg):
 
     foot_slip = RewTerm(
         func=floyd_mdp.foot_slip_penalty,
-        weight=-2.0,
+        weight=-0.5,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=FOOT_BODIES),
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FOOT_BODIES),

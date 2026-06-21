@@ -9,7 +9,7 @@ from isaaclab.assets.articulation import ArticulationCfg
 
 FLOYD_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
-        asset_path="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/urdf/Floyd_URDF.urdf",
+        asset_path="C:/Users/logan/Floyd-IsaacLab/BDXR/robots/urdf/Floyd_URDF.urdf",
         fix_base=False,
         merge_fixed_joints=True,
         activate_contact_sensors=True,
@@ -34,20 +34,20 @@ FLOYD_CFG = ArticulationCfg(
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.12),
         joint_pos={
-            "LeftHipRoll": 0.0,
-            "RightHipRoll": 0.0,
-            "LeftHipPitch": 0.0,
-            "RightHipPitch": 0.0,
-            "LeftKneePitch": 0.0,
-            "RightKneePitch": 0.0,
-            "LeftAnklePitch": 0.0,
-            "RightAnklePitch": 0.0,
+            "left_hip_roll": 0.0,
+            "right_hip_roll": 0.0,
+            "left_hip_pitch": 0.0,
+            "right_hip_pitch": 0.0,
+            "left_knee": 0.0,
+            "right_knee": 0.0,
+            "left_ankle": 0.0,
+            "right_ankle": 0.0,
         },
     ),
     actuators={
         # RS03 joints — exact gains from Kayden's policy.yaml and config.py
         "legs_RS03": DelayedPDActuatorCfg(
-            joint_names_expr=[".*HipRoll", ".*HipPitch", ".*KneePitch"],
+            joint_names_expr=[".*hip_roll", ".*hip_pitch", ".*knee"],
             stiffness=78.957,
             damping=5.027,
             armature=0.02,
@@ -58,7 +58,7 @@ FLOYD_CFG = ArticulationCfg(
         ),
         # RS02 joints — exact gains from Kayden's policy.yaml and config.py
         "legs_RS02": DelayedPDActuatorCfg(
-            joint_names_expr=[".*AnklePitch"],
+            joint_names_expr=[".*ankle"],
             stiffness=16.581,
             damping=1.056,
             armature=0.0042,
