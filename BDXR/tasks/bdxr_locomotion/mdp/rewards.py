@@ -308,6 +308,33 @@ def foot_slip_penalty(
     return torch.sum(reward, dim=1)
 
 
+def swing_ankle_deviation_penalty(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg,
+    sensor_cfg: SceneEntityCfg,
+    threshold: float = 1.0,
+) -> torch.Tensor:
+    """Penalize ankle deviation from 0 during swing phase (foot in the air).
+
+    During stance/toe-off the ankle is free to flex. During swing it should
+    stay near neutral so the toe doesn't drag on the ground.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+
+    # is_contact: (B, 2) — True when foot is on the ground
+    net_forces = contact_sensor.data.net_forces_w_history
+    is_contact = torch.max(torch.norm(net_forces[:, :, sensor_cfg.body_ids], dim=-1), dim=1)[0] > threshold
+    is_swing = ~is_contact  # (B, 2)
+
+    # ankle_pos: (B, 2) — left then right ankle deviation from 0
+    ankle_pos = asset.data.joint_pos[:, asset_cfg.joint_ids]  # (B, 2)
+
+    # Only penalize when foot is in swing
+    penalty = is_swing.float() * torch.abs(ankle_pos)
+    return torch.sum(penalty, dim=1)
+
+
 def joint_acceleration_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
     """Penalize joint accelerations on the articulation."""
     # extract the used quantities (to enable type-hinting)
@@ -339,3 +366,5 @@ def joint_velocity_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) ->
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
     return torch.linalg.norm((asset.data.joint_vel), dim=1)
+
+

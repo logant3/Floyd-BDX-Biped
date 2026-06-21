@@ -95,6 +95,17 @@ class FloydRewards(RewardsCfg):
         },
     )
 
+    swing_ankle_deviation = RewTerm(
+        func=floyd_mdp.swing_ankle_deviation_penalty,
+        weight=-3.0,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["left_ankle", "right_ankle"]),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FOOT_BODIES),
+            "threshold": 1.0,
+        },
+    )
+
+
 
 
 @configclass
