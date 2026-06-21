@@ -176,7 +176,8 @@ def generate_clip(robot, vx, vy, vtheta, n_cycles, cycle_time, dt):
         rf_task.T_world_frame  = make_T(rf_cmd)
         base_task.T_world_frame = make_T(np.array([base_mid_x, base_mid_y, BASE_HEIGHT]))
 
-        solver.solve(True)
+        dq = solver.solve(False)
+        robot.integrate(dq, dt)
         robot.update_kinematics()
 
         for j, key in enumerate(JOINT_ORDER):
