@@ -71,6 +71,12 @@ def smooth_step(t):
     return t * t * (3 - 2 * t)
 
 
+def make_T(pos):
+    T = np.eye(4)
+    T[:3, 3] = pos
+    return T
+
+
 def swing_trajectory(phase, start_pos, end_pos, step_height):
     """
     phase: 0→1 during swing
@@ -104,7 +110,7 @@ def generate_clip(robot, vx, vy, vtheta, n_cycles, cycle_time, dt):
 
     joints_task = solver.add_joints_task()
     joints_task.configure("joints", "soft", 0.5)
-    joints_task.set_joints({"LeftHipRoll": 0.0, "RightHipRoll": 0.0})
+    joints_task.set_joints({"left_hip_roll": 0.0, "right_hip_roll": 0.0})
 
     # Reset to neutral
     for name in URDF_JOINTS.values():
@@ -167,13 +173,8 @@ def generate_clip(robot, vx, vy, vtheta, n_cycles, cycle_time, dt):
         base_mid_x = (lf_cmd[0] + rf_cmd[0]) / 2.0
         base_mid_y = (lf_cmd[1] + rf_cmd[1]) / 2.0
 
-        def make_T(pos):
-            T = np.eye(4)
-            T[:3, 3] = pos
-            return T
-
-        lf_task.T_world_frame  = make_T(lf_cmd)
-        rf_task.T_world_frame  = make_T(rf_cmd)
+        lf_task.T_world_frame   = make_T(lf_cmd)
+        rf_task.T_world_frame   = make_T(rf_cmd)
         base_task.T_world_frame = make_T(np.array([base_mid_x, base_mid_y, BASE_HEIGHT]))
 
         solver.solve(False)
