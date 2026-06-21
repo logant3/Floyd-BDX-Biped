@@ -210,7 +210,7 @@ def fit_poly(traj_24, cycle_samples, degree):
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 print("Loading URDF...")
-robot = RobotWrapper(URDF_PATH, placo.Flags.ignore_collisions)
+robot = RobotWrapper(URDF_PATH, placo.Flags.ignore_collisions | placo.Flags.no_mesh_loading)
 
 output = {}
 cycle_samples = int(CYCLE_TIME / DT)
