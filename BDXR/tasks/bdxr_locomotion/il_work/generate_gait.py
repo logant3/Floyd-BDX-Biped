@@ -210,7 +210,20 @@ def fit_poly(traj_24, cycle_samples, degree):
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 print("Loading URDF...")
-robot = RobotWrapper(URDF_PATH, placo.Flags.ignore_collisions | placo.Flags.no_mesh_loading)
+# Strip mesh references so placo doesn't try to load Windows paths
+import re, tempfile, os
+with open(URDF_PATH, "r", errors="replace") as f:
+    urdf_str = f.read()
+# Remove all <mesh .../> tags
+urdf_str = re.sub(r'<mesh[^/]*/>', '', urdf_str)
+# Remove <visual> and <collision> blocks entirely
+urdf_str = re.sub(r'<visual>.*?</visual>', '', urdf_str, flags=re.DOTALL)
+urdf_str = re.sub(r'<collision>.*?</collision>', '', urdf_str, flags=re.DOTALL)
+_tmp = tempfile.NamedTemporaryFile(suffix=".urdf", delete=False, mode="w")
+_tmp.write(urdf_str)
+_tmp.close()
+robot = RobotWrapper(_tmp.name, placo.Flags.ignore_collisions)
+os.unlink(_tmp.name)
 
 output = {}
 cycle_samples = int(CYCLE_TIME / DT)
