@@ -92,16 +92,19 @@ def generate_clip(robot, vx, vy, vtheta, n_cycles, cycle_time, dt):
     solver.enable_velocity_limits(True)
     solver.dt = dt
 
-    lf_task  = solver.add_frame_task("FootBaseLeft",  placo.WrenchTask.Position)
-    rf_task  = solver.add_frame_task("FootBaseRight", placo.WrenchTask.Position)
-    base_task = solver.add_frame_task("base_link",    placo.WrenchTask.Position)
-    joints_task = solver.add_joints_task()
-    joints_task.set_joints({"LeftHipRoll": 0.0, "RightHipRoll": 0.0})
-    joints_task.weight = 0.5
+    T_eye = np.eye(4)
+    lf_task   = solver.add_frame_task("FootBaseLeft",  T_eye)
+    rf_task   = solver.add_frame_task("FootBaseRight", T_eye)
+    base_task = solver.add_frame_task("base_link",     T_eye)
 
-    lf_task.weight   = 2000.0
-    rf_task.weight   = 2000.0
-    base_task.weight = 100.0
+    # position only (orientation weight = 0), soft constraint
+    lf_task.configure("lf",   "soft", 2000.0, 0.0)
+    rf_task.configure("rf",   "soft", 2000.0, 0.0)
+    base_task.configure("base", "soft", 100.0, 50.0)
+
+    joints_task = solver.add_joints_task()
+    joints_task.configure("joints", "soft", 0.5)
+    joints_task.set_joints({"LeftHipRoll": 0.0, "RightHipRoll": 0.0})
 
     # Reset to neutral
     for name in URDF_JOINTS.values():
@@ -164,9 +167,14 @@ def generate_clip(robot, vx, vy, vtheta, n_cycles, cycle_time, dt):
         base_mid_x = (lf_cmd[0] + rf_cmd[0]) / 2.0
         base_mid_y = (lf_cmd[1] + rf_cmd[1]) / 2.0
 
-        lf_task.position  = lf_cmd
-        rf_task.position  = rf_cmd
-        base_task.position = np.array([base_mid_x, base_mid_y, BASE_HEIGHT])
+        def make_T(pos):
+            T = np.eye(4)
+            T[:3, 3] = pos
+            return T
+
+        lf_task.T_world_frame  = make_T(lf_cmd)
+        rf_task.T_world_frame  = make_T(rf_cmd)
+        base_task.T_world_frame = make_T(np.array([base_mid_x, base_mid_y, BASE_HEIGHT]))
 
         solver.solve(True)
         robot.update_kinematics()
