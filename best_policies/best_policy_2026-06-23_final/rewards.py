@@ -374,25 +374,4 @@ def swing_ankle_deviation_penalty(
     is_swing = ~is_contact  # (B, 2)
 
     # ankle_pos: (B, 2) — left then right ankle deviation from 0
-    ankle_pos = asset.data.joint_pos[:, asset_cfg.joint_ids]  # (B, 2)
-
-    # Only penalize when foot is in swing
-    penalty = is_swing.float() * torch.abs(ankle_pos)
-    return torch.sum(penalty, dim=1)
-
-
-def joint_velocity_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
-    """Penalize high joint velocities."""
-    asset: Articulation = env.scene[asset_cfg.name]
-    return torch.linalg.norm(asset.data.joint_vel[:, asset_cfg.joint_ids], dim=1)
-
-
-def joint_position_penalty(
-    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, stand_still_scale: float, velocity_threshold: float
-) -> torch.Tensor:
-    """Penalize joint position error from default on the articulation."""
-    asset: Articulation = env.scene[asset_cfg.name]
-    cmd = torch.linalg.norm(env.command_manager.get_command("base_velocity"), dim=1)
-    body_vel = torch.linalg.norm(asset.data.root_lin_vel_b[:, :2], dim=1)
-    reward = torch.linalg.norm((asset.data.joint_pos - asset.data.default_joint_pos), dim=1)
-    return torch.where(torch.logical_or(cmd > 0.0, body_vel > velocity_threshold), reward, stand_still_scale * reward)
+    ankle_pos = asse
