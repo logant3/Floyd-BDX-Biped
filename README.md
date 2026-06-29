@@ -1,5 +1,6 @@
 # Floyd-BDX-Biped
 ![Floyd](media/Floyd-V1.png)
+![Floyd](media/progress1.jpg)
 Isaac Lab reinforcement learning training configuration for Floyd, a custom BDX-style bipedal robot.
 
 ## Robot
