@@ -44,6 +44,8 @@ FLOYD_CFG = ArticulationCfg(
             "right_ankle": 0.0,
         },
     ),
+    
+    #need to revisit the armature values, as they are estimates right now before testing with motors!!
     actuators={
         # RS03 joints (hip roll, hip pitch, knee)
         "legs_RS03": DelayedPDActuatorCfg(

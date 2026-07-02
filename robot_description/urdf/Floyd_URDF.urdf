@@ -9,18 +9,18 @@
   <link name="world"/>
   <joint name="world_to_base" type="fixed">
     <parent link="world"/><child link="base_link"/>
-    <origin xyz="0 0 0.07" rpy="1.5708 0 0"/>
+    <origin xyz="0 0 0.07" rpy="1.5708 0 1.5708"/>
   </joint>
 
   <link name="base_link">
     <inertial>
       <origin xyz="0.000041 0.113645 -0.041341" rpy="0 0 0"/>
-      <mass value="0.394155"/>
+      <mass value="0.6000"/>
       <inertia ixx="1.408284e-03" ixy="-1.897436e-07" ixz="1.078543e-07" iyy="1.214341e-03" iyz="3.732288e-05" izz="1.426591e-03"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/base_link.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/base_link.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
@@ -32,72 +32,72 @@
   <link name="RS02">
     <inertial>
       <origin xyz="-0.000001 -0.000017 -0.018675" rpy="0 0 0"/>
-      <mass value="0.412"/>
+      <mass value="0.415"/>
       <inertia ixx="6.984698e-04" ixy="-9.381074e-08" ixz="-1.398595e-08" iyy="6.965342e-04" iyz="-1.504158e-07" izz="9.983122e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS02.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS02_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="BellyBase">
     <inertial>
       <origin xyz="0.000434 0.084808 -0.094523" rpy="0 0 0"/>
-      <mass value="0.098302"/>
+      <mass value="0.097"/>
       <inertia ixx="2.201126e-04" ixy="9.433723e-09" ixz="-7.509861e-10" iyy="1.164424e-04" iyz="6.927696e-09" izz="3.329250e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/BellyBase.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/BellyBase.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/BellyBase_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/BellyBase_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="FrontBase">
     <inertial>
       <origin xyz="0.000457 0.017194 -0.002132" rpy="0 0 0"/>
-      <mass value="0.138068"/>
+      <mass value="0.391"/>
       <inertia ixx="6.174463e-04" ixy="-2.860063e-08" ixz="3.650685e-08" iyy="1.120639e-03" iyz="-1.367391e-05" izz="5.150193e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FrontBase.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FrontBase.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FrontBase_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FrontBase_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="Back_Base">
     <inertial>
       <origin xyz="-0.000050 0.151327 -0.111932" rpy="0 0 0"/>
-      <mass value="0.101249"/>
+      <mass value="0.128"/>
       <inertia ixx="3.725083e-04" ixy="8.736840e-10" ixz="-3.394402e-11" iyy="2.599864e-04" iyz="-6.653377e-07" izz="6.296030e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/Back_Base.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/Back_Base.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/Back_Base_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/Back_Base_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
-  <link name="RS03_LeftHipRoll">
+  <link name="RS03_left_hip_roll">
     <inertial>
       <origin xyz="0.000055 -0.000035 0.032499" rpy="0 0 0"/>
       <mass value="0.88"/>
@@ -105,16 +105,16 @@
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_LeftHipRoll.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_left_hip_roll.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_LeftHipRoll_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_left_hip_roll_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
-  <link name="RS03_RightHipRoll">
+  <link name="RS03_right_hip_roll">
     <inertial>
       <origin xyz="0.000055 -0.000035 0.032499" rpy="0 0 0"/>
       <mass value="0.88"/>
@@ -122,161 +122,161 @@
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_RightHipRoll.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_right_hip_roll.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_RightHipRoll_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_right_hip_roll_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="FrontPanel">
     <inertial>
       <origin xyz="-0.000021 -0.000087 0.011946" rpy="0 0 0"/>
-      <mass value="0.124478"/>
+      <mass value="0.173"/>
       <inertia ixx="1.026147e-03" ixy="-5.440937e-08" ixz="2.044978e-07" iyy="1.462744e-03" iyz="2.508271e-05" izz="6.075604e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FrontPanel.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FrontPanel.dae" scale="1 1 1"/></geometry>
       <material name="white"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FrontPanel_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FrontPanel_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="LowerPanel">
     <inertial>
       <origin xyz="0.000574 0.086802 -0.101696" rpy="0 0 0"/>
-      <mass value="0.017805"/>
+      <mass value="0.022"/>
       <inertia ixx="4.766835e-06" ixy="1.232844e-08" ixz="-2.838666e-08" iyy="2.594866e-05" iyz="9.691213e-08" izz="3.009190e-05"/>
     </inertial>
 
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/LowerPanel_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/LowerPanel_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="TopBase">
     <inertial>
       <origin xyz="0.000443 0.066289 0.121506" rpy="0 0 0"/>
-      <mass value="0.086052"/>
+      <mass value="0.101"/>
       <inertia ixx="3.202494e-04" ixy="-4.481170e-10" ixz="6.232997e-11" iyy="3.138761e-04" iyz="1.344030e-06" izz="6.319658e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/TopBase.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/TopBase.dae" scale="1 1 1"/></geometry>
       <material name="white"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/TopBase_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/TopBase_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="Tail_Base">
     <inertial>
       <origin xyz="-0.000008 0.123720 -0.119364" rpy="0 0 0"/>
-      <mass value="0.094793"/>
+      <mass value="0.087"/>
       <inertia ixx="8.300694e-05" ixy="5.149743e-08" ixz="-7.174040e-09" iyy="2.193858e-04" iyz="5.202700e-06" izz="2.742215e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/Tail_Base.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/Tail_Base.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/Tail_Base_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/Tail_Base_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="Battery_Mount">
     <inertial>
       <origin xyz="0.000000 0.150935 -0.122445" rpy="0 0 0"/>
-      <mass value="0.046707"/>
+      <mass value="0.119"/>
       <inertia ixx="6.053243e-05" ixy="-8.358700e-17" ixz="-2.134479e-17" iyy="2.594989e-05" iyz="1.309662e-08" izz="8.488730e-05"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/Battery_Mount.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/Battery_Mount.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/Battery_Mount_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/Battery_Mount_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="HipRollMountLeft">
     <inertial>
       <origin xyz="0.029877 -0.000000 -0.002039" rpy="0 0 0"/>
-      <mass value="0.099119"/>
+      <mass value="0.09"/>
       <inertia ixx="2.527369e-05" ixy="1.591640e-17" ixz="-1.343212e-05" iyy="1.022096e-04" iyz="6.665319e-18" izz="1.100274e-04"/>
     </inertial>
     <visual>
       <origin xyz="-0.000000 0.000000 -0.047500" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountLeft.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountLeft.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="-0.000000 0.000000 -0.047500" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="HipRollMountRight">
     <inertial>
       <origin xyz="0.029877 -0.000000 0.002039" rpy="0 0 0"/>
-      <mass value="0.099119"/>
+      <mass value="0.09"/>
       <inertia ixx="2.527369e-05" ixy="1.623018e-17" ixz="1.343212e-05" iyy="1.022096e-04" iyz="-6.557230e-18" izz="1.100274e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 -0.000000 0.047500" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountRight.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountRight.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 -0.000000 0.047500" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/HipRollMountRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="TopRightPanel">
     <inertial>
       <origin xyz="0.071691 0.101272 -0.108532" rpy="0 0 0"/>
-      <mass value="0.017563"/>
+      <mass value="0.029"/>
       <inertia ixx="2.667521e-05" ixy="-1.035279e-06" ixz="-3.676503e-06" iyy="1.204879e-05" iyz="2.401303e-07" izz="2.453708e-05"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/TopRightPanel.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/TopRightPanel.dae" scale="1 1 1"/></geometry>
       <material name="white"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/TopRightPanel_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/TopRightPanel_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="TopLeftPanel">
     <inertial>
       <origin xyz="0.071691 0.101272 0.108532" rpy="0 0 0"/>
-      <mass value="0.017563"/>
+      <mass value="0.029"/>
       <inertia ixx="2.667521e-05" ixy="-1.035279e-06" ixz="3.676503e-06" iyy="1.204879e-05" iyz="-2.401303e-07" izz="2.453708e-05"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/TopLeftPanel.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/TopLeftPanel.dae" scale="1 1 1"/></geometry>
       <material name="white"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/TopLeftPanel_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/TopLeftPanel_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
@@ -288,16 +288,16 @@
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/Battery.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/Battery.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/Battery_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/Battery_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
-  <link name="RS03_LeftHipPitch">
+  <link name="RS03_left_hip_pitch">
     <inertial>
       <origin xyz="0.000055 -0.000034 -0.024100" rpy="0 0 0"/>
       <mass value="0.88"/>
@@ -305,16 +305,16 @@
     </inertial>
     <visual>
       <origin xyz="-0.000000 0.000000 -0.056600" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_LeftHipPitch.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_left_hip_pitch.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="-0.000000 0.000000 -0.056600" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_LeftHipPitch_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_left_hip_pitch_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
-  <link name="RS03_RightHipPitch">
+  <link name="RS03_right_hip_pitch">
     <inertial>
       <origin xyz="0.000055 -0.000034 -0.024100" rpy="0 0 0"/>
       <mass value="0.88"/>
@@ -322,67 +322,67 @@
     </inertial>
     <visual>
       <origin xyz="-0.000000 0.000000 -0.056600" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_RightHipPitch.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_right_hip_pitch.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="-0.000000 0.000000 -0.056600" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_RightHipPitch_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_right_hip_pitch_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="ThighMountFemaleLeft">
     <inertial>
       <origin xyz="0.089238 -0.056193 0.051560" rpy="0 0 0"/>
-      <mass value="0.235725"/>
+      <mass value="0.22"/>
       <inertia ixx="1.147473e-03" ixy="6.709431e-07" ixz="2.894154e-06" iyy="3.702857e-04" iyz="1.508304e-06" izz="8.628353e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/ThighMountFemaleLeft.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/ThighMountFemaleLeft.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/ThighMountFemaleLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/ThighMountFemaleLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="ThighMountFemaleRight">
     <inertial>
       <origin xyz="0.089238 -0.056193 -0.051560" rpy="0 0 0"/>
-      <mass value="0.235725"/>
+      <mass value="0.22"/>
       <inertia ixx="1.147473e-03" ixy="6.709431e-07" ixz="-2.894154e-06" iyy="3.702857e-04" iyz="-1.508304e-06" izz="8.628353e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/ThighMountFemaleRight.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/ThighMountFemaleRight.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/ThighMountFemaleRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/ThighMountFemaleRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="ThighMountMaleLeft">
     <inertial>
       <origin xyz="0.126251 -0.055482 0.054596" rpy="0 0 0"/>
-      <mass value="0.196896"/>
+      <mass value="0.148"/>
       <inertia ixx="9.078561e-04" ixy="-6.215341e-10" ixz="-1.699958e-06" iyy="1.918954e-04" iyz="7.027079e-07" izz="7.317574e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/ThighMountMaleLeft.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/ThighMountMaleLeft.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/ThighMountMaleLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/ThighMountMaleLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
-  <link name="RS03_LeftKneePitch">
+  <link name="RS03_left_knee">
     <inertial>
       <origin xyz="0.000055 -0.000034 0.032500" rpy="0 0 0"/>
       <mass value="0.88"/>
@@ -390,33 +390,33 @@
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_LeftKneePitch.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_left_knee.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_LeftKneePitch_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_left_knee_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="ThighMountMaleRight">
     <inertial>
       <origin xyz="0.126251 -0.055482 -0.054596" rpy="0 0 0"/>
-      <mass value="0.196896"/>
+      <mass value="0.148"/>
       <inertia ixx="9.078561e-04" ixy="-6.215341e-10" ixz="1.699958e-06" iyy="1.918954e-04" iyz="-7.027079e-07" izz="7.317574e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/ThighMountMaleRight.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/ThighMountMaleRight.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/ThighMountMaleRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/ThighMountMaleRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
-  <link name="RS03_RightKneePitch">
+  <link name="RS03_right_knee">
     <inertial>
       <origin xyz="0.000055 -0.000034 -0.032500" rpy="0 0 0"/>
       <mass value="0.88"/>
@@ -424,182 +424,182 @@
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_RightKneePitch.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_right_knee.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS03_RightKneePitch_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS03_right_knee_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="LowerLegLeft">
     <inertial>
       <origin xyz="-0.017343 -0.043665 -0.011868" rpy="0 0 0"/>
-      <mass value="0.203942"/>
+      <mass value="0.128"/>
       <inertia ixx="4.641541e-04" ixy="2.596602e-06" ixz="-2.728395e-06" iyy="1.048877e-04" iyz="-4.847183e-05" izz="3.936618e-04"/>
     </inertial>
     <visual>
       <origin xyz="-0.071250 0.111000 -0.058592" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/LowerLegLeft.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/LowerLegLeft.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="-0.071250 0.111000 -0.058592" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/LowerLegLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/LowerLegLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="LowerLegRight">
     <inertial>
       <origin xyz="-0.017343 -0.043665 0.011868" rpy="0 0 0"/>
-      <mass value="0.203942"/>
+      <mass value="0.128"/>
       <inertia ixx="4.641541e-04" ixy="2.596602e-06" ixz="2.728395e-06" iyy="1.048877e-04" iyz="4.847183e-05" izz="3.936618e-04"/>
     </inertial>
     <visual>
       <origin xyz="-0.071250 0.111000 0.058593" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/LowerLegRight.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/LowerLegRight.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="-0.071250 0.111000 0.058593" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/LowerLegRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/LowerLegRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
-  <link name="RS02_LeftAnklePitch">
+  <link name="RS02_left_ankle">
     <inertial>
       <origin xyz="-0.000001 -0.000017 -0.018675" rpy="0 0 0"/>
-      <mass value="0.412"/>
+      <mass value="0.415"/>
       <inertia ixx="6.984698e-04" ixy="-9.381074e-08" ixz="-1.398595e-08" iyy="6.965342e-04" iyz="-1.504158e-07" izz="9.983122e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_LeftAnklePitch.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS02_left_ankle.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_LeftAnklePitch_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS02_left_ankle_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
-  <link name="RS02_RightAnklePitch">
+  <link name="RS02_right_ankle">
     <inertial>
       <origin xyz="-0.000001 -0.000017 0.018675" rpy="0 0 0"/>
-      <mass value="0.412"/>
+      <mass value="0.415"/>
       <inertia ixx="6.984697e-04" ixy="-9.381083e-08" ixz="1.398023e-08" iyy="6.965341e-04" iyz="1.504278e-07" izz="9.983121e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_RightAnklePitch.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS02_right_ankle.dae" scale="1 1 1"/></geometry>
       <material name="grey"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/RS02_RightAnklePitch_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/RS02_right_ankle_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="FootBaseLeft">
     <inertial>
       <origin xyz="-0.008444 -0.024088 -0.043158" rpy="0 0 0"/>
-      <mass value="0.12934"/>
+      <mass value="0.136"/>
       <inertia ixx="3.556114e-04" ixy="-7.520558e-06" ixz="-2.395612e-05" iyy="9.836110e-05" iyz="-1.249472e-05" izz="3.254246e-04"/>
     </inertial>
     <visual>
       <origin xyz="-0.118071 -0.137704 0.226786" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootBaseLeft.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootBaseLeft.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="-0.118071 -0.137704 0.226786" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootBaseLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootBaseLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="FootBaseRight">
     <inertial>
       <origin xyz="-0.008444 -0.024088 0.043158" rpy="0 0 0"/>
-      <mass value="0.12934"/>
+      <mass value="0.136"/>
       <inertia ixx="3.556114e-04" ixy="-7.520558e-06" ixz="2.395612e-05" iyy="9.836110e-05" iyz="1.249472e-05" izz="3.254246e-04"/>
     </inertial>
     <visual>
       <origin xyz="-0.118071 -0.137704 -0.226786" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootBaseRight.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootBaseRight.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="-0.118071 -0.137704 -0.226786" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootBaseRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootBaseRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="FootCoverLeft">
     <inertial>
       <origin xyz="0.115670 0.090150 -0.256187" rpy="0 0 0"/>
-      <mass value="0.025806"/>
+      <mass value="0.00001"/>
       <inertia ixx="7.466116e-05" ixy="-1.361931e-05" ixz="-3.315508e-06" iyy="2.186713e-05" iyz="-1.020207e-05" izz="7.251174e-05"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootCoverLeft.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootCoverLeft.dae" scale="1 1 1"/></geometry>
       <material name="green"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootCoverLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootCoverLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="FootPadLeft">
     <inertial>
       <origin xyz="0.099043 0.111765 -0.298244" rpy="0 0 0"/>
-      <mass value="0.79727"/>
-      <inertia ixx="1.834157e-03" ixy="5.954845e-09" ixz="-7.915263e-08" iyy="1.136861e-04" iyz="-5.702188e-06" izz="1.909860e-03"/>
+      <mass value="0.048"/>
+      <inertia ixx="1.104e-04" ixy="3.585e-10" ixz="-4.765e-09" iyy="6.844e-06" iyz="-3.433e-07" izz="1.150e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootPadLeft.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootPadLeft.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootPadLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootPadLeft_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="FootCoverRight">
     <inertial>
       <origin xyz="0.115669 0.090146 0.256187" rpy="0 0 0"/>
-      <mass value="0.025807"/>
+      <mass value="0.00001"/>
       <inertia ixx="7.466704e-05" ixy="-1.362016e-05" ixz="3.315386e-06" iyy="2.186690e-05" iyz="1.020217e-05" izz="7.251843e-05"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootCoverRight.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootCoverRight.dae" scale="1 1 1"/></geometry>
       <material name="green"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootCoverRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootCoverRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
   <link name="FootPadRight">
     <inertial>
       <origin xyz="0.099043 0.111762 0.298242" rpy="0 0 0"/>
-      <mass value="0.797489"/>
-      <inertia ixx="1.834695e-03" ixy="-3.959480e-08" ixz="-9.508132e-08" iyy="1.142863e-04" iyz="5.510822e-06" izz="1.909957e-03"/>
+      <mass value="0.048"/>
+      <inertia ixx="1.104e-04" ixy="-2.383e-09" ixz="-5.724e-09" iyy="6.880e-06" iyz="3.317e-07" izz="1.150e-04"/>
     </inertial>
     <visual>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootPadRight.dae" scale="1 1 1"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootPadRight.dae" scale="1 1 1"/></geometry>
       <material name="black"/>
     </visual>
     <collision>
       <origin xyz="0.000000 0.000000 0.000000" rpy="0 0 0"/>
-      <geometry><mesh filename="package://Floyd_URDF_description/meshes/Floyd_URDF/FootPadRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
+      <geometry><mesh filename="C:/Users/logan/Downloads/Floyd-URDF-Main/Floyd_URDF_description/meshes/Floyd_URDF/FootPadRight_collision.stl" scale="0.01 0.01 0.01"/></geometry>
     </collision>
   </link>
 
@@ -624,12 +624,12 @@
   </joint>
 
   <joint name="Rigid_54" type="fixed">
-    <parent link="base_link"/><child link="RS03_LeftHipRoll"/>
+    <parent link="base_link"/><child link="RS03_left_hip_roll"/>
     <origin xyz="0.050050 0.102099 -0.090118" rpy="0.000001 0.000000 -1.570796"/>
   </joint>
 
   <joint name="Rigid_55" type="fixed">
-    <parent link="base_link"/><child link="RS03_RightHipRoll"/>
+    <parent link="base_link"/><child link="RS03_right_hip_roll"/>
     <origin xyz="-0.049950 0.102099 -0.090118" rpy="-0.000001 0.000000 1.570796"/>
   </joint>
 
@@ -658,18 +658,18 @@
     <origin xyz="0.000000 0.000000 0.000000" rpy="0.000000 0.000000 0.000000"/>
   </joint>
 
-  <joint name="LeftHipRoll" type="revolute">
-    <parent link="RS03_LeftHipRoll"/><child link="HipRollMountLeft"/>
+  <joint name="left_hip_roll" type="revolute">
+    <parent link="RS03_left_hip_roll"/><child link="HipRollMountLeft"/>
     <origin xyz="0.000000 -0.000000 0.056600" rpy="3.141593 0.000000 1.570796"/>
     <axis xyz="-0.000000 0.000000 -1.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.3491" upper="0.3491" effort="60.0" velocity="20.0"/>
   </joint>
 
-  <joint name="RightHipRoll" type="revolute">
-    <parent link="RS03_RightHipRoll"/><child link="HipRollMountRight"/>
+  <joint name="right_hip_roll" type="revolute">
+    <parent link="RS03_right_hip_roll"/><child link="HipRollMountRight"/>
     <origin xyz="0.000000 -0.000000 0.056600" rpy="-0.000000 0.000000 1.570796"/>
     <axis xyz="-0.000000 -0.000000 1.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.3491" upper="0.3491" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="Rigid_56" type="fixed">
@@ -687,27 +687,27 @@
     <origin xyz="0.000050 0.005043 0.000000" rpy="0.000000 0.000000 0.000000"/>
   </joint>
 
-  <joint name="LeftHipPitch" type="revolute">
-    <parent link="HipRollMountLeft"/><child link="RS03_LeftHipPitch"/>
+  <joint name="left_hip_pitch" type="revolute">
+    <parent link="HipRollMountLeft"/><child link="RS03_left_hip_pitch"/>
     <origin xyz="0.071250 -0.000000 0.012093" rpy="-1.570796 0.698132 1.570796"/>
     <axis xyz="-0.000000 0.000000 -1.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-1.0472" upper="0.6981" effort="60.0" velocity="20.0"/>
   </joint>
 
-  <joint name="RightHipPitch" type="revolute">
-    <parent link="HipRollMountRight"/><child link="RS03_RightHipPitch"/>
+  <joint name="right_hip_pitch" type="revolute">
+    <parent link="HipRollMountRight"/><child link="RS03_right_hip_pitch"/>
     <origin xyz="0.071250 -0.000000 -0.012092" rpy="1.570796 0.698132 -1.570796"/>
     <axis xyz="0.000000 0.000000 -1.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.6981" upper="1.0472" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="Rigid_59" type="fixed">
-    <parent link="RS03_LeftHipPitch"/><child link="ThighMountFemaleLeft"/>
+    <parent link="RS03_left_hip_pitch"/><child link="ThighMountFemaleLeft"/>
     <origin xyz="-0.058592 0.000000 0.071250" rpy="0.000000 1.570796 0.000000"/>
   </joint>
 
   <joint name="Rigid_61" type="fixed">
-    <parent link="RS03_RightHipPitch"/><child link="ThighMountFemaleRight"/>
+    <parent link="RS03_right_hip_pitch"/><child link="ThighMountFemaleRight"/>
     <origin xyz="0.058592 0.000000 0.071250" rpy="-0.000000 1.570796 0.000000"/>
   </joint>
 
@@ -717,7 +717,7 @@
   </joint>
 
   <joint name="Rigid_64" type="fixed">
-    <parent link="ThighMountFemaleLeft"/><child link="RS03_LeftKneePitch"/>
+    <parent link="ThighMountFemaleLeft"/><child link="RS03_left_knee"/>
     <origin xyz="0.127850 -0.111000 0.058592" rpy="-0.000000 -1.570796 0.000000"/>
   </joint>
 
@@ -727,46 +727,46 @@
   </joint>
 
   <joint name="Rigid_65" type="fixed">
-    <parent link="ThighMountFemaleRight"/><child link="RS03_RightKneePitch"/>
+    <parent link="ThighMountFemaleRight"/><child link="RS03_right_knee"/>
     <origin xyz="0.127850 -0.111000 -0.058593" rpy="-0.000000 1.570796 0.000000"/>
   </joint>
 
-  <joint name="LeftKneePitch" type="revolute">
-    <parent link="RS03_LeftKneePitch"/><child link="LowerLegLeft"/>
+  <joint name="left_knee" type="revolute">
+    <parent link="RS03_left_knee"/><child link="LowerLegLeft"/>
     <origin xyz="-0.000000 -0.000000 0.056600" rpy="-1.047198 1.570796 0.000000"/>
     <axis xyz="-1.000000 0.000000 0.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.1745" upper="1.0472" effort="60.0" velocity="20.0"/>
   </joint>
 
-  <joint name="RightKneePitch" type="revolute">
-    <parent link="RS03_RightKneePitch"/><child link="LowerLegRight"/>
+  <joint name="right_knee" type="revolute">
+    <parent link="RS03_right_knee"/><child link="LowerLegRight"/>
     <origin xyz="0.000000 0.000000 -0.056600" rpy="1.047198 -1.570796 0.000000"/>
     <axis xyz="1.000000 -0.000000 0.000000"/>
-    <limit lower="" upper="" effort="60.0" velocity="20.0"/>
+    <limit lower="-0.1745" upper="1.0472" effort="60.0" velocity="20.0"/>
   </joint>
 
   <joint name="Rigid_23" type="fixed">
-    <parent link="LowerLegLeft"/><child link="RS02_LeftAnklePitch"/>
+    <parent link="LowerLegLeft"/><child link="RS02_left_ankle"/>
     <origin xyz="-0.001500 -0.140028 -0.000013" rpy="-1.570796 -0.261799 -1.570796"/>
   </joint>
 
   <joint name="Rigid_28" type="fixed">
-    <parent link="LowerLegRight"/><child link="RS02_RightAnklePitch"/>
+    <parent link="LowerLegRight"/><child link="RS02_right_ankle"/>
     <origin xyz="-0.001500 -0.140028 0.000013" rpy="1.570796 0.261799 -1.570796"/>
   </joint>
 
-  <joint name="LeftAnklePitch" type="revolute">
-    <parent link="RS02_LeftAnklePitch"/><child link="FootBaseLeft"/>
+  <joint name="left_ankle" type="revolute">
+    <parent link="RS02_left_ankle"/><child link="FootBaseLeft"/>
     <origin xyz="0.000000 0.000000 0.004000" rpy="0.436332 -1.570796 0.000000"/>
     <axis xyz="1.000000 0.000000 -0.000000"/>
-    <limit lower="" upper="" effort="17.0" velocity="43.0"/>
+    <limit lower="-0.5236" upper="1.2217" effort="17.0" velocity="43.0"/>
   </joint>
 
-  <joint name="RightAnklePitch" type="revolute">
-    <parent link="RS02_RightAnklePitch"/><child link="FootBaseRight"/>
+  <joint name="right_ankle" type="revolute">
+    <parent link="RS02_right_ankle"/><child link="FootBaseRight"/>
     <origin xyz="0.000000 -0.000000 -0.004000" rpy="-0.436332 1.570796 0.000000"/>
     <axis xyz="-1.000000 -0.000000 -0.000000"/>
-    <limit lower="" upper="" effort="17.0" velocity="43.0"/>
+    <limit lower="-0.5236" upper="1.2217" effort="17.0" velocity="43.0"/>
   </joint>
 
   <joint name="Rigid_21" type="fixed">
@@ -790,3 +790,4 @@
   </joint>
 
 </robot>
+                                                                                        
