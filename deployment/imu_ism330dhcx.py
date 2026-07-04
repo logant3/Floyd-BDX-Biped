@@ -353,12 +353,23 @@ class ISM330DHCXImu:
 if __name__ == "__main__":
     import argparse
 
+    # Floyd hardware defaults: Qwiic on bus 7, SA0=VCC → 0x6B
+    # Mounting rotation corrects for physical IMU orientation on Floyd's front-right base plate.
+    # Computed from measured proj_grav [-0.994, 0.038, -0.101] when robot upright.
+    FLOYD_MOUNTING_ROTATION = np.array([
+        [ 0.102,  0.034, -0.994],
+        [ 0.034,  0.999,  0.038],
+        [ 0.994, -0.038,  0.101],
+    ])
+
     parser = argparse.ArgumentParser(description="ISM330DHCX IMU sanity check")
-    parser.add_argument("--bus",  type=int, default=1,    help="I2C bus number (default 1)")
-    parser.add_argument("--addr", type=int, default=0x6A, help="I2C address (default 0x6A)")
+    parser.add_argument("--bus",  type=lambda x: int(x, 0), default=7,    help="I2C bus number (default 7)")
+    parser.add_argument("--addr", type=lambda x: int(x, 0), default=0x6B, help="I2C address (default 0x6B)")
+    parser.add_argument("--no-rotation", action="store_true", help="Disable mounting rotation (raw sensor frame)")
     args = parser.parse_args()
 
-    imu = ISM330DHCXImu(i2c_bus=args.bus, i2c_addr=args.addr)
+    rotation = None if args.no_rotation else FLOYD_MOUNTING_ROTATION
+    imu = ISM330DHCXImu(i2c_bus=args.bus, i2c_addr=args.addr, mounting_rotation=rotation)
     if not imu.start():
         raise SystemExit(1)
 
