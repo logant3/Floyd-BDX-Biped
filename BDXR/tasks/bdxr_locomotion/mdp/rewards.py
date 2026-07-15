@@ -17,6 +17,9 @@ from typing import TYPE_CHECKING
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import ManagerTermBase, SceneEntityCfg
 from isaaclab.sensors import ContactSensor
+from isaaclab.utils.math import quat_apply_inverse
+
+from .reference_motion import ReferenceMotionLibraryLegs, FLOYD_REF_INDICES
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
@@ -45,6 +48,53 @@ def both_feet_air_penalty(
     # Penalize when neither foot is in contact
     both_in_air = ~is_contact[:, 0] & ~is_contact[:, 1]
     return both_in_air.float()
+
+
+def feet_air_time_touchdown(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    threshold_min: float = 0.3,
+    threshold_max: float = 0.6,
+) -> torch.Tensor:
+    """Reward at touchdown based on completed air time (Skyentific-style).
+
+    Fires once per foot landing. Negative for short hops (< threshold_min),
+    positive and capped for good steps (threshold_min to threshold_max).
+    Gated on xy velocity command so robot stands still when commanded to.
+    """
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    first_contact = contact_sensor.compute_first_contact(env.step_dt)[:, sensor_cfg.body_ids]
+    last_air_time = contact_sensor.data.last_air_time[:, sensor_cfg.body_ids]
+    air_time = (last_air_time - threshold_min) * first_contact
+    air_time = torch.clamp(air_time, min=0.0, max=threshold_max - threshold_min)
+    reward = torch.sum(air_time, dim=1)
+    reward *= torch.norm(env.command_manager.get_command("base_velocity")[:, :2], dim=1) > 0.1
+    return reward
+
+
+def feet_air_time_positive_biped(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    threshold_min: float = 0.3,
+    threshold_max: float = 0.6,
+) -> torch.Tensor:
+    """Continuously reward single-stance gait (exactly one foot on ground).
+
+    While the robot is in single stance, reward accumulates proportional to
+    how long it has been in that mode. Encourages sustained foot lift rather
+    than quick taps. Gated on xy velocity command.
+    """
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
+    contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
+    in_contact = contact_time > 0.0
+    in_mode_time = torch.where(in_contact, contact_time, air_time)
+    single_stance = torch.sum(in_contact.int(), dim=1) == 1
+    reward = torch.min(torch.where(single_stance.unsqueeze(-1), in_mode_time, 0.0), dim=1)[0]
+    reward = torch.clamp(reward, max=threshold_max)
+    reward *= reward > threshold_min
+    reward *= torch.norm(env.command_manager.get_command("base_velocity")[:, :2], dim=1) > 0.1
+    return reward
 
 
 def bipedal_air_time_reward(
@@ -213,18 +263,24 @@ def foot_clearance_reward(
 ) -> torch.Tensor:
     """Reward the swinging feet for clearing a specified height off the ground.
 
-    Gated on linear velocity command so it does not fire during pure yaw turns —
-    feet should stay flat when spinning in place.
+    Gated on any motion command (linear OR yaw) so feet lift during turning as well
+    as during forward/lateral walking. Without the yaw term, foot_clearance was
+    exactly zero during pure yaw commands, giving the robot no incentive to lift
+    feet while spinning → heel-pivot / heel-strike during yaw turns.
+    Yaw rate is scaled by 0.3 to convert rad/s → comparable magnitude to m/s.
     """
     asset: RigidObject = env.scene[asset_cfg.name]
     foot_z_target_error = torch.square(asset.data.body_pos_w[:, asset_cfg.body_ids, 2] - target_height)
     foot_velocity_tanh = torch.tanh(tanh_mult * torch.norm(asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2], dim=2))
-    reward = foot_z_target_error * foot_velocity_tanh
-    # Evaluate each foot independently so one dragging foot can't hide behind the other
-    base_reward = torch.sum(torch.exp(-reward / std), dim=1)
-    # Gate: only active when robot has meaningful linear velocity command
-    lin_vel_cmd = torch.norm(env.command_manager.get_command("base_velocity")[:, :2], dim=1)
-    lin_scale = torch.clamp(lin_vel_cmd / lin_vel_threshold, 0.0, 1.0)
+    # Velocity gate OUTSIDE the exponent: stationary foot gets 0, not exp(0)=1
+    per_foot_reward = torch.exp(-foot_z_target_error / std) * foot_velocity_tanh
+    base_reward = torch.sum(per_foot_reward, dim=1)
+    # Gate: active when robot has meaningful linear OR yaw velocity command
+    vel_cmd = env.command_manager.get_command("base_velocity")
+    lin_vel_cmd = torch.norm(vel_cmd[:, :2], dim=1)
+    yaw_cmd = torch.abs(vel_cmd[:, 2]) * 0.3  # scale rad/s → comparable to m/s
+    combined = torch.max(lin_vel_cmd, yaw_cmd)
+    lin_scale = torch.clamp(combined / lin_vel_threshold, 0.0, 1.0)
     return base_reward * lin_scale
 
 
@@ -293,6 +349,52 @@ def yaw_turn_foot_orientation_penalty(
     return torch.sum(penalty, dim=1)
 
 
+def stance_foot_flat_penalty(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg,
+    sensor_cfg: SceneEntityCfg,
+    threshold: float = 1.0,
+) -> torch.Tensor:
+    """Penalize foot tilt in world space during stance (foot in contact with ground).
+
+    Uses actual foot body orientation (world-frame quaternion) rather than ankle
+    joint angle, so it directly catches heel-strike and toe-strike regardless of
+    velocity command direction (forward, lateral, backward, yaw).
+
+    This is the primary anti-heel-strike term. Unlike yaw_foot_flat which is gated
+    to only fire during pure yaw turns, this fires whenever the foot is on the ground.
+
+    A flat foot has its local z-axis pointing straight up (world +Z).
+    Any tilt away from vertical produces a non-zero penalty.
+    """
+    asset: RigidObject = env.scene[asset_cfg.name]
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+
+    # is_contact: (B, 2) — True when foot is in contact
+    net_forces = contact_sensor.data.net_forces_w_history
+    is_contact = torch.max(torch.norm(net_forces[:, :, sensor_cfg.body_ids], dim=-1), dim=1)[0] > threshold
+
+    # Foot quaternions in world frame: (B, 2, 4) — [w, x, y, z]
+    foot_quats = asset.data.body_quat_w[:, asset_cfg.body_ids, :]  # (B, 2, 4)
+
+    w = foot_quats[..., 0]
+    x = foot_quats[..., 1]
+    y = foot_quats[..., 2]
+    z = foot_quats[..., 3]
+
+    # Local z-axis of foot expressed in world frame (3rd column of rotation matrix)
+    # Perfect flat foot: this equals [0, 0, 1] → tilt = 0
+    foot_z_world_x = 2.0 * (x * z + w * y)
+    foot_z_world_y = 2.0 * (y * z - w * x)
+
+    # Tilt magnitude: 0 when perfectly flat, ~1 at 90 degrees
+    tilt = torch.sqrt(foot_z_world_x ** 2 + foot_z_world_y ** 2 + 1e-6)  # (B, 2)
+
+    # Only penalize during stance — no velocity command gate
+    penalty = is_contact.float() * tilt
+    return torch.sum(penalty, dim=1)
+
+
 ##
 # Regularization Penalties
 ##
@@ -354,6 +456,28 @@ def foot_slip_penalty(
     return torch.sum(reward, dim=1)
 
 
+def stance_ankle_deviation_penalty(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg,
+    sensor_cfg: SceneEntityCfg,
+    threshold: float = 1.0,
+) -> torch.Tensor:
+    """Penalize ankle deviation from 0 during stance phase (foot on the ground).
+
+    Prevents tiptoe walking by keeping the ankle near neutral during contact.
+    Mirrors swing_ankle_deviation_penalty but fires when the foot IS in contact.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+
+    net_forces = contact_sensor.data.net_forces_w_history
+    is_contact = torch.max(torch.norm(net_forces[:, :, sensor_cfg.body_ids], dim=-1), dim=1)[0] > threshold
+
+    ankle_pos = asset.data.joint_pos[:, asset_cfg.joint_ids]  # (B, 2)
+    penalty = is_contact.float() * torch.abs(ankle_pos)
+    return torch.sum(penalty, dim=1)
+
+
 def swing_ankle_deviation_penalty(
     env: ManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg,
@@ -376,9 +500,26 @@ def swing_ankle_deviation_penalty(
     # ankle_pos: (B, 2) — left then right ankle deviation from 0
     ankle_pos = asset.data.joint_pos[:, asset_cfg.joint_ids]  # (B, 2)
 
-    # Only penalize when foot is in swing
+    # Penalize any ankle deviation from neutral during swing.
     penalty = is_swing.float() * torch.abs(ankle_pos)
     return torch.sum(penalty, dim=1)
+
+
+def joint_torque_symmetry_penalty(
+    env: ManagerBasedRLEnv,
+    left_cfg: SceneEntityCfg,
+    right_cfg: SceneEntityCfg,
+) -> torch.Tensor:
+    """Penalize torque asymmetry between corresponding left/right joint pairs.
+
+    For each paired (left, right) joint, penalizes |torque_left - torque_right|.
+    left_cfg and right_cfg must list the same number of joints in matching order.
+    Forces both legs to share work equally rather than offloading to one side.
+    """
+    asset: Articulation = env.scene[left_cfg.name]
+    left_t  = torch.abs(asset.data.applied_torque[:, left_cfg.joint_ids])   # (B, n)
+    right_t = torch.abs(asset.data.applied_torque[:, right_cfg.joint_ids])  # (B, n)
+    return torch.sum(torch.abs(left_t - right_t), dim=1)
 
 
 def joint_velocity_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
@@ -396,3 +537,212 @@ def joint_position_penalty(
     body_vel = torch.linalg.norm(asset.data.root_lin_vel_b[:, :2], dim=1)
     reward = torch.linalg.norm((asset.data.joint_pos - asset.data.default_joint_pos), dim=1)
     return torch.where(torch.logical_or(cmd > 0.0, body_vel > velocity_threshold), reward, stand_still_scale * reward)
+
+
+def foot_step_symmetry_penalty(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg,
+) -> torch.Tensor:
+    """Penalize asymmetric foot reach in the sagittal (forward/backward) plane.
+
+    For a symmetric bipedal gait, when the left foot is X meters ahead of the base,
+    the right foot should be X meters behind — so their X offsets in body frame sum to ~0.
+    A persistent non-zero sum means one foot consistently reaches further than the other.
+
+    Penalty = |left_foot_x_body + right_foot_x_body|
+    """
+    asset: RigidObject = env.scene[asset_cfg.name]
+
+    # Foot world positions: (B, 2, 3)
+    foot_pos_w = asset.data.body_pos_w[:, asset_cfg.body_ids, :]
+    base_pos_w = asset.data.root_pos_w          # (B, 3)
+    base_quat_w = asset.data.root_quat_w        # (B, 4)
+
+    B = foot_pos_w.shape[0]
+
+    # Foot positions relative to base, in world frame: (B, 2, 3)
+    rel_pos_w = foot_pos_w - base_pos_w.unsqueeze(1)
+
+    # Rotate into base body frame: (B*2, 3)
+    quat_exp = base_quat_w.unsqueeze(1).expand(-1, 2, -1).reshape(B * 2, 4)
+    foot_pos_b = quat_apply_inverse(quat_exp, rel_pos_w.reshape(B * 2, 3)).reshape(B, 2, 3)
+
+    # X = forward in body frame; left=[:,0], right=[:,1]
+    foot_x = foot_pos_b[:, :, 0]  # (B, 2)
+
+    # Symmetric walk: foot_x[:,0] + foot_x[:,1] ≈ 0
+    # Clamp to 0.5m max to prevent large spikes during falls/pushes
+    return torch.clamp(torch.abs(foot_x[:, 0] + foot_x[:, 1]), max=0.5)
+
+
+##
+# Motion Imitation
+##
+
+
+class ImitationMotion(ManagerTermBase):
+    """Reward for imitating a polynomial reference walking motion.
+
+    Combines three sub-rewards (weighted internally):
+      - imitate_joint_pos: exp-kernel on joint position error vs reference
+      - imitate_joint_vel: exp-kernel on joint velocity error vs reference
+      - imitate_foot_contact: fraction of feet whose contact state matches reference
+
+    Reference clips are selected per-env based on nearest velocity command.
+    Gait phase advances by dt/period each step and resets to a random value
+    on episode reset for training diversity.
+
+    Reference joint order (10-joint BDX-R pkl):
+      0 L_HipYaw  1 L_HipRoll  2 L_HipPitch  3 L_Knee  4 L_Ankle
+      5 R_HipYaw  6 R_HipRoll  7 R_HipPitch  8 R_Knee  9 R_Ankle
+    Floyd uses indices [1,2,3,4,6,7,8,9] (skip yaw at 0 and 5).
+    Floyd joint order assumed: left_hip_roll, left_hip_pitch, left_knee, left_ankle,
+                               right_hip_roll, right_hip_pitch, right_knee, right_ankle
+    """
+
+    def __init__(self, cfg: RewardTermCfg, env: ManagerBasedRLEnv):
+        super().__init__(cfg, env)
+
+        pkl_path         = cfg.params["pkl_path"]
+        self._std_jpos   = cfg.params.get("std_jpos",           0.25)
+        self._std_jvel   = cfg.params.get("std_jvel",           2.0)
+        self._w_jpos     = cfg.params.get("w_jpos",             1.5)
+        self._w_jvel     = cfg.params.get("w_jvel",             0.1)
+        self._w_contact  = cfg.params.get("w_contact",          0.5)
+        self._threshold  = cfg.params.get("contact_threshold",  1.0)
+
+        # Reference motion library
+        self._library = ReferenceMotionLibraryLegs(pkl_path, device=env.device)
+        self._ref_idx = torch.tensor(FLOYD_REF_INDICES, dtype=torch.long, device=env.device)
+
+        # Floyd joint IDs in same order as FLOYD_REF_INDICES mapping
+        floyd_joint_names = [
+            "left_hip_roll", "left_hip_pitch", "left_knee", "left_ankle",
+            "right_hip_roll", "right_hip_pitch", "right_knee", "right_ankle",
+        ]
+        robot = env.scene["robot"]
+        jn = robot.data.joint_names
+        self._joint_ids = torch.tensor(
+            [jn.index(n) for n in floyd_joint_names], dtype=torch.long, device=env.device
+        )
+
+        # Contact sensor and foot body IDs [left, right]
+        sensor_name  = cfg.params.get("sensor_name",  "contact_forces")
+        foot_names   = cfg.params.get("foot_names",   ["FootBaseLeft", "FootBaseRight"])
+        self._contact_sensor: ContactSensor = env.scene.sensors[sensor_name]
+        self._foot_ids, _  = self._contact_sensor.find_bodies(foot_names)
+
+        # Per-env phase buffer and clip selection
+        self._phase     = torch.zeros(env.num_envs, device=env.device)
+        self._clip_idx  = torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
+
+        # Sign correction for right hip pitch.
+        #
+        # Floyd jpos_ref layout after FLOYD_REF_INDICES:
+        #   [0] L_HipRoll  [1] L_HipPitch  [2] L_Knee  [3] L_Ankle
+        #   [4] R_HipRoll  [5] R_HipPitch  [6] R_Knee  [7] R_Ankle
+        #
+        # Verified by tracing the full URDF kinematic chain (all fixed joints included)
+        # to compute world-frame rotation axes for each joint:
+        #
+        #   joint           Floyd world axis    BDX-R limits
+        #   L_HipPitch      [0, +1, 0]          (-0.75, 0.70)  ← positive = backward
+        #   R_HipPitch      [0, -1, 0]          (-0.75, 0.70)  ← positive = FORWARD
+        #   L_Knee          [0,-0.766,+0.643]   (-0.94,  1.30) ← mirrored limits
+        #   R_Knee          [0,+0.766,-0.643]   (-1.30,  0.94) ← OPPOSITE axis = match
+        #   L_Ankle         [0,-0.766,+0.643]   (-0.84,  1.20)
+        #   R_Ankle         [0,+0.766,-0.643]   (-1.20,  0.84) ← OPPOSITE axis = match
+        #
+        # Hip pitch: BDX-R uses identical limits for L and R (same sign convention —
+        # positive = backward extension for both sides).  Floyd's L and R hip pitch
+        # axes are OPPOSITE ([0,+1,0] vs [0,-1,0]), so positive L = backward while
+        # positive R = forward.  The left side therefore already matches BDX-R; only
+        # R_HipPitch (index 5) must be negated so that the reference correctly drives
+        # Floyd's right leg backward during stance / forward during swing.
+        #
+        # Knee and ankle: Floyd's axes ARE already mirrored between sides (OPPOSITE),
+        # which naturally matches BDX-R's mirrored limits — no sign flip needed.
+        self._ref_sign = torch.ones(8, device=env.device)
+        self._ref_sign[5] = -1.  # R_HipPitch: BDX-R positive=backward, Floyd positive=forward
+
+        # Cache on env so observation functions can read without re-computing
+        env._imitation_phase    = torch.zeros(env.num_envs, 1, device=env.device)
+        env._imitation_ref_jpos = torch.zeros(env.num_envs, 8, device=env.device)
+
+    def reset(self, env_ids: torch.Tensor) -> None:
+        """Randomise starting phase so the policy sees diverse gait states."""
+        self._phase[env_ids] = torch.rand(len(env_ids), device=self._phase.device)
+
+    def __call__(
+        self,
+        env: ManagerBasedRLEnv,
+        pkl_path: str,
+        std_jpos: float          = 0.25,
+        std_jvel: float          = 2.0,
+        w_jpos: float            = 1.5,
+        w_jvel: float            = 0.1,
+        w_contact: float         = 0.5,
+        contact_threshold: float = 1.0,
+        sensor_name: str         = "contact_forces",
+        foot_names               = None,
+    ) -> torch.Tensor:
+        robot: Articulation = env.scene["robot"]
+
+        # Select nearest reference clip by velocity command [vx, vy, 0]
+        vel_cmd = env.command_manager.get_command("base_velocity")
+        vel_3d  = torch.cat(
+            [vel_cmd[:, :2], torch.zeros(env.num_envs, 1, device=env.device)], dim=1
+        )
+        self._clip_idx = self._library.nearest_clip(vel_3d)
+
+        # Advance phase by dt/period, wrap at 1.0
+        period       = self._library.period(self._clip_idx)
+        self._phase  = (self._phase + env.step_dt / period) % 1.0
+
+        # Query reference joint positions, velocities, and foot contacts
+        _, _, jpos_ref10, jvel_ref10, foot_ref = self._library.query(self._clip_idx, self._phase)
+        jpos_ref = jpos_ref10[:, self._ref_idx] * self._ref_sign   # (B, 8)
+        jvel_ref = jvel_ref10[:, self._ref_idx] * self._ref_sign   # (B, 8)
+
+        # Cache for observation functions (one-step lag is acceptable)
+        env._imitation_phase    = self._phase.unsqueeze(1).detach()
+        env._imitation_ref_jpos = jpos_ref.detach()
+
+        # ── Joint position reward ────────────────────────────────────────
+        jpos     = robot.data.joint_pos[:, self._joint_ids]
+        jpos_err = torch.sum(torch.square(jpos - jpos_ref), dim=1)
+        r_jpos   = torch.exp(-jpos_err / (self._std_jpos ** 2)) * self._w_jpos
+
+        # ── Joint velocity reward ────────────────────────────────────────
+        jvel     = robot.data.joint_vel[:, self._joint_ids]
+        jvel_err = torch.sum(torch.square(jvel - jvel_ref), dim=1)
+        r_jvel   = torch.exp(-jvel_err / (self._std_jvel ** 2)) * self._w_jvel
+
+        # ── Foot contact reward ──────────────────────────────────────────
+        net_forces = self._contact_sensor.data.net_forces_w_history
+        is_contact = (
+            torch.max(torch.norm(net_forces[:, :, self._foot_ids], dim=-1), dim=1)[0]
+            > self._threshold
+        )  # (B, 2)
+        ref_contact = foot_ref > 0.5          # (B, 2) — threshold polynomial value
+        match       = (is_contact == ref_contact).float()
+        r_contact   = match.mean(dim=1) * self._w_contact
+
+        return r_jpos + r_jvel + r_contact
+
+
+##
+# Observation helpers for imitation (read cached state written by ImitationMotion)
+##
+
+
+def imitation_phase(env: ManagerBasedRLEnv) -> torch.Tensor:
+    """Current gait phase in [0, 1). Updated by ImitationMotion reward term."""
+    return getattr(env, "_imitation_phase",
+                   torch.zeros(env.num_envs, 1, device=env.device))
+
+
+def ref_joint_pos(env: ManagerBasedRLEnv) -> torch.Tensor:
+    """Reference joint positions (8 DOF) at current phase. Updated by ImitationMotion."""
+    return getattr(env, "_imitation_ref_jpos",
+                   torch.zeros(env.num_envs, 8, device=env.device))
