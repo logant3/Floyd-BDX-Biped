@@ -8,6 +8,7 @@ Controls:
     Z / Numpad 7           : rotate left (yaw)
     X / Numpad 9           : rotate right (yaw)
     L                      : stop (zero all commands)
+    P                      : apply random push (tests recovery)
     ESC                    : quit
 """
 
@@ -35,9 +36,12 @@ simulation_app = app_launcher.app
 
 """Rest everything follows."""
 
+import math
 import os
 import time
 
+import carb
+import carb.input
 import gymnasium as gym
 import torch
 from rsl_rl.runners import OnPolicyRunner
@@ -98,13 +102,28 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: RslRlBaseRunnerCfg):
 
     # Keyboard device — must be created after sim starts
     teleop_cfg = Se2KeyboardCfg(
-        v_x_sensitivity=0.3,
-        v_y_sensitivity=0.2,
+        v_x_sensitivity=0.4,
+        v_y_sensitivity=0.35,
         omega_z_sensitivity=0.8,
         sim_device=str(device),
     )
     teleop = Se2Keyboard(teleop_cfg)
     teleop.reset()
+
+    # Push key (P) — applies a random velocity impulse to test recovery
+    push_requested = [False]
+    _carb_input = carb.input.acquire_input_interface()
+
+    import omni.appwindow
+    _keyboard = omni.appwindow.get_default_app_window().get_keyboard()
+
+    def _on_key_event(event, *args, **kwargs):
+        if (event.type == carb.input.KeyboardEventType.KEY_PRESS
+                and event.input == carb.input.KeyboardInput.P):
+            push_requested[0] = True
+        return True
+
+    _keyboard_sub = _carb_input.subscribe_to_keyboard_events(_keyboard, _on_key_event)
 
     print("\n" + "=" * 50)
     print("  FLOYD KEYBOARD TELEOP")
@@ -113,6 +132,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: RslRlBaseRunnerCfg):
     print("  Left / Right Arrow: strafe left / right")
     print("  Z / X            : rotate left / right")
     print("  L                : stop")
+    print("  P                : random push (test recovery)")
     print("  ESC              : quit")
     print("=" * 50 + "\n")
 
@@ -131,6 +151,24 @@ def main(env_cfg: ManagerBasedRLEnvCfg, agent_cfg: RslRlBaseRunnerCfg):
             vel_cmd_term.vel_command_b[:, :3] = cmd.unsqueeze(0).expand(num_envs, -1)
         except Exception:
             pass
+
+        # Apply random push if P was pressed
+        if push_requested[0]:
+            push_requested[0] = False
+            robot = env.unwrapped.scene["robot"]
+            angle = torch.rand(1).item() * 2 * math.pi
+            # Training push: push_by_setting_velocity with x/y in (-0.5, 0.5) m/s absolute.
+            # Match that range so the policy sees a disturbance it was trained on.
+            magnitude = 0.5  # m/s — matches training push_robot velocity_range max
+            lin_vel = robot.data.root_lin_vel_w.clone()
+            # SET (not add) lateral velocity to match training behavior
+            lin_vel[:, 0] = magnitude * math.cos(angle)
+            lin_vel[:, 1] = magnitude * math.sin(angle)
+            ang_vel = robot.data.root_ang_vel_w.clone()
+            # write_root_velocity_to_sim expects [N, 6]: linear then angular
+            root_vel_6 = torch.cat([lin_vel, ang_vel], dim=-1)
+            robot.write_root_velocity_to_sim(root_vel_6)
+            print("\n  [PUSH]", end="", flush=True)
 
         with torch.inference_mode():
             actions = policy(obs)

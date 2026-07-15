@@ -72,6 +72,11 @@ RS02_RATED_W  = 170.0
 MOTOR_EFF     = 0.80          # assumed electrical efficiency
 BATTERY_V     = 40.0          # nominal volts
 
+# Torque constants from RS03/RS02 datasheet — used to compute implied phase
+# current directly from sim torque: I_phase (Arms) = torque (Nm) / Kt
+RS03_KT = 2.36   # N·m/Arms  (RS03 datasheet)
+RS02_KT = 1.22   # N·m/Arms  (RS02 datasheet)
+
 TOTAL_RATED_MECHANICAL_W = len(RS03_JOINTS) * RS03_RATED_W + len(RS02_JOINTS) * RS02_RATED_W
 # = 6*380 + 2*170 = 2620W
 # ──────────────────────────────────────────────────────────────────────────────
@@ -142,8 +147,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg,
     current_log      = []   # electrical watts / battery voltage
     load_frac_log    = []   # mechanical / rated
 
-    # Per-joint peak tracker
-    peak_power_per_joint = torch.zeros(len(all_idx))
+    # Per-joint peak trackers
+    peak_power_per_joint   = torch.zeros(len(all_idx))
+    peak_torque_per_joint  = torch.zeros(len(all_idx))   # N·m
+    peak_current_per_joint = torch.zeros(len(all_idx))   # Arms via Kt
+
+    # Build per-joint Kt lookup (indexed same as all_idx)
+    tracked_names_pre = [joint_names[i] for i in all_idx]
+    kt_per_joint = torch.tensor([
+        RS03_KT if n in RS03_JOINTS else RS02_KT
+        for n in tracked_names_pre
+    ])
 
     step = 0
     while simulation_app.is_running() and step < args_cli.steps:
@@ -163,11 +177,15 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg,
         per_joint_mech = torch.abs(torques * vels)   # (num_joints,)
 
         # Sum only our tracked joints
-        tracked_mech = per_joint_mech[all_idx]
-        total_mech   = tracked_mech.sum().item()
+        tracked_mech   = per_joint_mech[all_idx]
+        tracked_torque = torch.abs(torques[all_idx])          # N·m, per tracked joint
+        tracked_kt_cur = tracked_torque.cpu() / kt_per_joint  # Arms via Kt, per joint
+        total_mech     = tracked_mech.sum().item()
 
         # Update peak per joint
-        peak_power_per_joint = torch.max(peak_power_per_joint, tracked_mech.cpu())
+        peak_power_per_joint   = torch.max(peak_power_per_joint,   tracked_mech.cpu())
+        peak_torque_per_joint  = torch.max(peak_torque_per_joint,  tracked_torque.cpu())
+        peak_current_per_joint = torch.max(peak_current_per_joint, tracked_kt_cur)
 
         total_elec    = total_mech / MOTOR_EFF
         total_current = total_elec / BATTERY_V
@@ -211,12 +229,19 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg,
         print(f"  BMS limit (~22A)    — avg margin: {22 - curr_arr.mean():.2f}A  "
               f"peak margin: {22 - curr_arr.max():.2f}A")
         print()
-        print("  Peak power per joint:")
+        print("  Peak per joint (power | torque | implied phase current via Kt):")
         tracked_names = [joint_names[i] for i in all_idx]
-        for name, pwr in zip(tracked_names, peak_power_per_joint.tolist()):
+        for name, pwr, trq, cur in zip(tracked_names,
+                                        peak_power_per_joint.tolist(),
+                                        peak_torque_per_joint.tolist(),
+                                        peak_current_per_joint.tolist()):
             motor_type = "RS03" if name in RS03_JOINTS else "RS02"
             rated      = RS03_RATED_W if motor_type == "RS03" else RS02_RATED_W
-            print(f"    {name:<22s} {pwr:6.1f}W  ({pwr/rated*100:.0f}% of {motor_type} rated)")
+            kt         = RS03_KT      if motor_type == "RS03" else RS02_KT
+            rated_trq  = 60.0         if motor_type == "RS03" else 17.0
+            print(f"    {name:<22s}  {pwr:6.1f}W ({pwr/rated*100:.0f}%)  |  "
+                  f"{trq:5.1f} N·m ({trq/rated_trq*100:.0f}% of peak)  |  "
+                  f"{cur:5.2f} Arms  [Kt={kt}]")
         print("="*60)
 
         # Save CSV next to checkpoint

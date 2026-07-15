@@ -100,7 +100,7 @@
   <link name="RS03_left_hip_roll">
     <inertial>
       <origin xyz="0.000055 -0.000035 0.032499" rpy="0 0 0"/>
-      <mass value="0.88"/>
+      <mass value="0.922"/>
       <inertia ixx="9.276459e-04" ixy="6.261216e-07" ixz="1.050868e-06" iyy="8.887321e-04" iyz="-6.740456e-06" izz="1.219927e-03"/>
     </inertial>
     <visual>
@@ -117,7 +117,7 @@
   <link name="RS03_right_hip_roll">
     <inertial>
       <origin xyz="0.000055 -0.000035 0.032499" rpy="0 0 0"/>
-      <mass value="0.88"/>
+      <mass value="0.922"/>
       <inertia ixx="9.276459e-04" ixy="6.261216e-07" ixz="1.050868e-06" iyy="8.887321e-04" iyz="-6.740456e-06" izz="1.219927e-03"/>
     </inertial>
     <visual>
@@ -300,7 +300,7 @@
   <link name="RS03_left_hip_pitch">
     <inertial>
       <origin xyz="0.000055 -0.000034 -0.024100" rpy="0 0 0"/>
-      <mass value="0.88"/>
+      <mass value="0.922"/>
       <inertia ixx="9.275979e-04" ixy="6.289261e-07" ixz="1.055599e-06" iyy="8.887117e-04" iyz="-6.728938e-06" izz="1.219887e-03"/>
     </inertial>
     <visual>
@@ -317,7 +317,7 @@
   <link name="RS03_right_hip_pitch">
     <inertial>
       <origin xyz="0.000055 -0.000034 -0.024100" rpy="0 0 0"/>
-      <mass value="0.88"/>
+      <mass value="0.922"/>
       <inertia ixx="9.275979e-04" ixy="6.289261e-07" ixz="1.055599e-06" iyy="8.887117e-04" iyz="-6.728938e-06" izz="1.219887e-03"/>
     </inertial>
     <visual>
@@ -385,7 +385,7 @@
   <link name="RS03_left_knee">
     <inertial>
       <origin xyz="0.000055 -0.000034 0.032500" rpy="0 0 0"/>
-      <mass value="0.88"/>
+      <mass value="0.922"/>
       <inertia ixx="9.275979e-04" ixy="6.289261e-07" ixz="1.055599e-06" iyy="8.887117e-04" iyz="-6.728938e-06" izz="1.219887e-03"/>
     </inertial>
     <visual>
@@ -419,7 +419,7 @@
   <link name="RS03_right_knee">
     <inertial>
       <origin xyz="0.000055 -0.000034 -0.032500" rpy="0 0 0"/>
-      <mass value="0.88"/>
+      <mass value="0.922"/>
       <inertia ixx="9.276073e-04" ixy="6.289306e-07" ixz="-1.052974e-06" iyy="8.887210e-04" iyz="6.728513e-06" izz="1.219897e-03"/>
     </inertial>
     <visual>

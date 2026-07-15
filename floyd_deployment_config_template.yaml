@@ -1,0 +1,52 @@
+# Floyd Deployment Config — sidecar for policy .pt file
+# Place this next to your exported model: e.g. model_XXXXX.yaml alongside model_XXXXX.pt
+#
+# IMPORTANT: joint_names order must match IsaacLab's articulation order.
+# Verify at runtime by printing: env.scene["robot"].data.joint_names
+# IsaacLab sorts alphabetically by default (preserve_order=False), so expected order is below.
+# Confirm before first hardware run.
+#
+# No hip_yaw joints — Floyd URDF has 8 DOF only.
+# No neck/head joints — neck is physically present but not commanded this version.
+
+obs_dim: 35  # 3 (ang_vel) + 3 (proj_gravity) + 8 (joint_pos) + 8 (joint_vel) + 8 (actions) + 3 (vel_cmd)
+action_dim: 8
+
+# Alphabetical IsaacLab order (VERIFY this matches asset.data.joint_names at runtime)
+joint_names:
+  - left_ankle
+  - left_hip_pitch
+  - left_hip_roll
+  - left_knee
+  - right_ankle
+  - right_hip_pitch
+  - right_hip_roll
+  - right_knee
+
+# RS02 ankles: kp=16.581, kd=1.056 | RS03 hips+knees: kp=78.957, kd=5.027
+# Order matches joint_names above
+joint_stiffness: [16.581, 78.957, 78.957, 78.957, 16.581, 78.957, 78.957, 78.957]
+joint_damping:   [1.056,  5.027,  5.027,  5.027,  1.056,  5.027,  5.027,  5.027]
+
+default_joint_pos: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+# All joints use same action scale (set in floyd_env_cfg.py)
+action_scale: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+
+observation_names:
+  - base_ang_vel       # 3 dims — scaled by 0.2
+  - projected_gravity  # 3 dims
+  - joint_pos          # 8 dims
+  - joint_vel          # 8 dims — scaled by 0.05
+  - actions            # 8 dims
+  - velocity_commands  # 3 dims [lin_x, lin_y, ang_z]
+
+command_names:
+  - lin_vel_x
+  - lin_vel_y
+  - ang_vel_z
+
+# Applied BEFORE feeding to policy (must match env obs scaling in floyd_env_cfg.py)
+obs_scales:
+  base_ang_vel: 0.2
+  joint_vel: 0.05
