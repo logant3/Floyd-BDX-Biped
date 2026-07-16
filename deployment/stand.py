@@ -22,6 +22,7 @@ Requirements:
 import argparse
 import atexit
 import math
+import os
 import signal
 import struct
 import sys
@@ -32,8 +33,7 @@ import can
 import numpy as np
 import onnxruntime as ort
 
-import os
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from imu_ism330dhcx import ISM330DHCXImu
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -290,8 +290,53 @@ def main():
         start_pos[mid] = motor_states.get(mid, (0.0, 0.0))[0]
         print(f"   Motor {mid} ({MOTOR_NAMES[mid]:<18s}): start pos = {start_pos[mid]:.3f} rad")
 
+    # ── Encoder sanity check ──────────────────────────────────────────────────
+    print()
+    all_near_zero = all(abs(v) < 0.05 for v in start_pos.values())
+    out_of_range  = {mid: v for mid, v in start_pos.items() if abs(v) > 2.0}
+
+    if all_near_zero:
+        print("[WARNING] All encoders read near 0.0 rad.")
+        print("          Either motors zeroed at power-on, or robot was powered up in standing position.")
+        print("          If legs were NOT in the standing position when powered on, readings are WRONG.")
+        print()
+
+    if out_of_range:
+        print("[ABORT] Joint(s) outside ±2.0 rad — encoder error or bad mounting:")
+        for mid, v in out_of_range.items():
+            print(f"         Motor {mid} ({MOTOR_NAMES[mid]}): {v:+.3f} rad")
+        print()
+        disable_all(bus)
+        imu.stop()
+        bus.shutdown()
+        return
+
+    # Hold at zero torque while waiting — motors stay enabled but NO movement
+    standup_event = threading.Event()
+    def _wait_standup():
+        try:
+            input("\n[2/3] Press Enter to begin standup (motors will move to zero pose)...")
+        except (EOFError, OSError):
+            pass
+        standup_event.set()
+    threading.Thread(target=_wait_standup, daemon=True).start()
+
+    while not standup_event.is_set() and not _quit[0]:
+        drain(bus)
+        for mid in MOTOR_NAMES:
+            send_mit(bus, mid, 0.0, 0.0, 0.0, 0.0, 0.0)
+        read_motor_states(bus, motor_states)
+        time.sleep(0.02)
+
+    if _quit[0]:
+        print("\nAborted before standup.")
+        disable_all(bus)
+        imu.stop()
+        bus.shutdown()
+        return
+
     # ── Standup: interpolate to zero over 2s ──────────────────────────────────
-    print("\n[2/3] Moving to zero pose (2s)...")
+    print("\n  Moving to zero pose (2s)...")
     STANDUP_STEPS = int(2.0 / 0.02)
     for step in range(STANDUP_STEPS + 1):
         if _quit[0]:
@@ -426,4 +471,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import traceback
+    try:
+        main()
+    except Exception as e:
+        print(f"\n[CRASH] Unhandled exception: {e}")
+        traceback.print_exc()
+        print("[CRASH] Motors will be disabled by atexit handler.")
+        sys.exit(1)
