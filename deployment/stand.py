@@ -7,8 +7,9 @@ the policy can balance before attempting any walking test.
 Sequence:
   1. Connects to CAN and IMU
   2. Enables all 8 motors and interpolates to zero pose over 2s (standup gains)
-  3. Press Enter to activate policy gains and start inference loop
-  4. Ctrl+C to disable motors and exit
+  3. Holds at zero — press Enter to activate policy
+  4. Policy runs with fall detection and joint-limit safety
+  5. Ctrl+C to disable motors and exit
 
 Run on Jetson:
     python3 deployment/stand.py --model path/to/policy.onnx
@@ -20,16 +21,17 @@ Requirements:
 
 import argparse
 import atexit
+import math
 import signal
 import struct
 import sys
+import threading
 import time
 
 import can
 import numpy as np
 import onnxruntime as ort
 
-# IMU driver (Floyd-specific, lives in deployment/)
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 from imu_ism330dhcx import ISM330DHCXImu
@@ -74,16 +76,24 @@ MOTOR_ID_TO_TYPE = {
     1:"O2", 2:"O2", 3:"O3", 4:"O3", 5:"O3", 6:"O3", 7:"O3", 8:"O3",
 }
 
-# Policy gains (from floyd_deployment_config_template.yaml)
+# Policy gains (from rsl_rl_ppo_cfg / deployment config)
 POLICY_KP = {1:16.581, 2:16.581, 3:78.957, 4:78.957, 5:78.957, 6:78.957, 7:78.957, 8:78.957}
 POLICY_KD = {1:1.056,  2:1.056,  3:5.027,  4:5.027,  5:5.027,  6:5.027,  7:5.027,  8:5.027}
 
-# Standup gains — stiffer for slow move-to-zero, eased off once policy takes over
-STANDUP_KP = {mid: kp * 1.5 for mid, kp in POLICY_KP.items()}
-STANDUP_KD = {mid: kd       for mid, kd in POLICY_KD.items()}
+# Standup gains — significantly stiffer than policy to hold firmly during move-to-zero.
+# RS03 (hip/knee): KP=200, RS02 (ankle): KP=60  (matches Kayden's hardware backend)
+STANDUP_KP = {1:60.0, 2:60.0, 3:200.0, 4:200.0, 5:200.0, 6:200.0, 7:200.0, 8:200.0}
+STANDUP_KD = {mid: kd for mid, kd in POLICY_KD.items()}
 
 ACTION_SCALE = 0.5
 OBS_DIM      = 33
+
+# Safety limits
+# Enter damping mode (kp=0, kd=1) if robot tilts past this angle
+FALL_ANGLE_DEG  = 45.0
+FALL_THRESHOLD  = math.cos(math.radians(FALL_ANGLE_DEG))  # 0.707
+# Enter damping mode if any joint target exceeds ±MAX_TARGET_RAD
+MAX_TARGET_RAD  = 1.5
 
 # IMU — Floyd hardware defaults (Qwiic, bus 7, SA0=VCC → 0x6B)
 FLOYD_MOUNTING_ROTATION = np.array([
@@ -93,9 +103,9 @@ FLOYD_MOUNTING_ROTATION = np.array([
 ])
 
 # CAN protocol
-MUX_ENABLE  = 0x03
-MUX_CONTROL = 0x01
-MUX_DISABLE = 0x04
+MUX_ENABLE   = 0x03
+MUX_CONTROL  = 0x01
+MUX_DISABLE  = 0x04
 MSG_FEEDBACK = 0x02
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -140,6 +150,13 @@ def drain(bus):
     while bus.recv(timeout=0) is not None:
         pass
 
+def flush_bus(bus):
+    """Drain with a small timeout to clear any buffered stale frames."""
+    while True:
+        msg = bus.recv(timeout=0.01)
+        if msg is None:
+            break
+
 def read_motor_states(bus, states):
     """Parse feedback frames into states dict {motor_id: (pos_rad, vel_rps)}."""
     while True:
@@ -157,21 +174,27 @@ def read_motor_states(bus, states):
         vel = _unscale(struct.unpack(">H", msg.data[2:4])[0], p["V_MIN"], p["V_MAX"])
         states[motor_id] = (pos, vel)
 
+def send_damping(bus, motor_states):
+    """Damping mode: kp=0, kd=1 at current position — lets robot fall safely."""
+    for mid in MOTOR_NAMES:
+        pos = motor_states.get(mid, (0.0, 0.0))[0]
+        send_mit(bus, mid, pos, 0.0, 0.0, 1.0, 0.0)
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Obs builder
 # ──────────────────────────────────────────────────────────────────────────────
 
 def build_obs(imu, states, prev_actions):
     """
-    Assembles the 35-dim observation vector in the exact order used during
-    IsaacLab training (from floyd_deployment_config_template.yaml):
-      base_ang_vel ×0.2 (3) | projected_gravity (3) | joint_pos (8) |
-      joint_vel ×0.05 (8)   | actions (8)           | vel_cmd (3)
+    Assembles the 33-dim observation vector matching IsaacLab training order
+    (velocity_env_cfg.py with base_lin_vel=None, height_scan=None):
+      base_ang_vel ×0.2 (3) | projected_gravity (3) | velocity_commands (3) |
+      joint_pos (8)          | joint_vel ×0.05 (8)   | actions (8)
     Velocity command is fixed at [0, 0, 0] for standing.
     """
-    imu_data      = imu.get_latest_data()
-    ang_vel       = imu_data["gyro"] * 0.2
-    proj_grav     = imu_data["projected_gravity"]
+    imu_data  = imu.get_latest_data()
+    ang_vel   = imu_data["gyro"] * 0.2
+    proj_grav = imu_data["projected_gravity"]
 
     joint_pos = np.zeros(8, dtype=np.float32)
     joint_vel = np.zeros(8, dtype=np.float32)
@@ -200,9 +223,9 @@ def build_obs(imu, states, prev_actions):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model",    required=True,  help="Path to policy.onnx")
-    parser.add_argument("--i2c_bus", type=int, default=7,    help="I2C bus for IMU (default 7)")
+    parser.add_argument("--i2c_bus", type=int,   default=7,     help="I2C bus for IMU (default 7)")
     parser.add_argument("--ctrl_hz", type=float, default=400.0, help="CAN loop rate Hz (default 400)")
-    parser.add_argument("--no_imu",  action="store_true", help="Mock IMU (debug only)")
+    parser.add_argument("--no_imu",  action="store_true",       help="Mock IMU (debug only)")
     args = parser.parse_args()
 
     CTRL_DT    = 1.0 / args.ctrl_hz
@@ -214,6 +237,7 @@ def main():
     print(f"  Model   : {args.model}")
     print(f"  Control : {args.ctrl_hz:.0f} Hz  |  Policy: {args.ctrl_hz/DECIMATION:.0f} Hz")
     print(f"  IMU     : {'MOCKED' if args.no_imu else f'I2C bus {args.i2c_bus}'}")
+    print(f"  Safety  : fall>{FALL_ANGLE_DEG:.0f}deg  |  max_target={MAX_TARGET_RAD} rad")
     print()
 
     # ── Load policy ──────────────────────────────────────────────────────────
@@ -270,21 +294,46 @@ def main():
     print("\n[2/3] Moving to zero pose (2s)...")
     STANDUP_STEPS = int(2.0 / 0.02)
     for step in range(STANDUP_STEPS + 1):
+        if _quit[0]:
+            break
         alpha = step / STANDUP_STEPS
         drain(bus)
         for mid in MOTOR_NAMES:
-            target = (1.0 - alpha) * start_pos[mid]  # interpolate toward 0.0
+            target = (1.0 - alpha) * start_pos[mid]
             send_mit(bus, mid, target, 0.0, STANDUP_KP[mid], STANDUP_KD[mid], 0.0)
         read_motor_states(bus, motor_states)
         time.sleep(0.02)
 
+    if _quit[0]:
+        print("\nAborted during standup.")
+        disable_all(bus)
+        imu.stop()
+        bus.shutdown()
+        return
+
     print("  Zero pose reached.")
     print("\n  Place Floyd on the ground if not already.")
 
-    try:
-        input("\n[3/3] Press Enter to activate policy...")
-    except (KeyboardInterrupt, EOFError):
-        _quit[0] = True
+    # ── Hold at zero while waiting for Enter ──────────────────────────────────
+    # Background thread waits for Enter; main loop keeps sending standup commands
+    # so motors stay active and Floyd doesn't go limp.
+    enter_event = threading.Event()
+    def _wait_for_enter():
+        try:
+            input("\n[3/3] Press Enter to activate policy (Ctrl+C to abort)...")
+        except (EOFError, OSError):
+            pass
+        enter_event.set()
+
+    waiter = threading.Thread(target=_wait_for_enter, daemon=True)
+    waiter.start()
+
+    while not enter_event.is_set() and not _quit[0]:
+        drain(bus)
+        for mid in MOTOR_NAMES:
+            send_mit(bus, mid, 0.0, 0.0, STANDUP_KP[mid], STANDUP_KD[mid], 0.0)
+        read_motor_states(bus, motor_states)
+        time.sleep(0.02)
 
     if _quit[0]:
         print("\nAborted before policy activation.")
@@ -293,31 +342,65 @@ def main():
         bus.shutdown()
         return
 
-    # ── Policy loop ──────────────────────────────────────────────────────────
-    print("\n  Policy active. Ctrl+C to stop.\n")
+    # ── Flush CAN buffer before policy takes over ─────────────────────────────
+    print("\n  Flushing CAN buffer...")
+    flush_bus(bus)
 
-    prev_actions = np.zeros(8, dtype=np.float32)
-    actions      = np.zeros(8, dtype=np.float32)
-    it           = 0
-    last_print   = time.time()
-    t_last       = time.perf_counter()
+    # ── Policy loop ──────────────────────────────────────────────────────────
+    print("  Policy active. Ctrl+C to stop.\n")
+
+    prev_actions   = np.zeros(8, dtype=np.float32)
+    actions        = np.zeros(8, dtype=np.float32)
+    it             = 0
+    last_print     = time.time()
+    t_last         = time.perf_counter()
+    in_damping     = False
 
     while not _quit[0]:
-        # Policy inference at 50 Hz
+        # ── Safety: fall detection ────────────────────────────────────────────
+        if not in_damping:
+            imu_data = imu.get_latest_data()
+            pg_z = float(imu_data["projected_gravity"][2])
+            # upright = -1.0; fallen past 45° means pg_z > -cos(45°) = -0.707
+            if pg_z > -FALL_THRESHOLD:
+                print(f"\n[SAFETY] Fall detected! proj_grav_z={pg_z:.3f} "
+                      f"(threshold={-FALL_THRESHOLD:.3f}). Entering damping mode.")
+                in_damping = True
+
+        # ── Damping mode: let the robot fall safely ───────────────────────────
+        if in_damping:
+            drain(bus)
+            send_damping(bus, motor_states)
+            read_motor_states(bus, motor_states)
+            elapsed = time.perf_counter() - t_last
+            sleep = CTRL_DT - elapsed
+            if sleep > 0:
+                time.sleep(sleep)
+            t_last = time.perf_counter()
+            it += 1
+            continue
+
+        # ── Policy inference at 50 Hz ─────────────────────────────────────────
         if it % DECIMATION == 0:
-            obs = build_obs(imu, motor_states, prev_actions)
+            obs     = build_obs(imu, motor_states, prev_actions)
             actions = session.run(None, {input_name: obs.reshape(1, -1)})[0][0]
             prev_actions = actions.copy()
 
-        # Send targets to all motors at control rate
+        # ── Safety: clamp targets, enter damping if wildly out of range ───────
         drain(bus)
         for i, (_, motor_id) in enumerate(JOINT_ORDER):
-            target = float(actions[i]) * ACTION_SCALE  # default_pos = 0
+            target = float(actions[i]) * ACTION_SCALE
+            if abs(target) > MAX_TARGET_RAD:
+                jname = JOINT_ORDER[i][0]
+                print(f"\n[SAFETY] Target for {jname} = {target:.3f} rad "
+                      f"exceeds ±{MAX_TARGET_RAD} rad. Entering damping mode.")
+                in_damping = True
+                break
             send_mit(bus, motor_id, target, 0.0, POLICY_KP[motor_id], POLICY_KD[motor_id], 0.0)
 
         read_motor_states(bus, motor_states)
 
-        # Status print every second
+        # ── Status print every second ─────────────────────────────────────────
         now = time.time()
         if now - last_print >= 1.0:
             imu_data = imu.get_latest_data()
@@ -326,7 +409,7 @@ def main():
                   f"| actions max {np.abs(actions).max():.3f}")
             last_print = now
 
-        # Pace to ctrl_hz
+        # ── Pace to ctrl_hz ───────────────────────────────────────────────────
         it += 1
         elapsed = time.perf_counter() - t_last
         sleep   = CTRL_DT - elapsed
