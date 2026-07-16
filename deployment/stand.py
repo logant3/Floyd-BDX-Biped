@@ -202,11 +202,6 @@ def build_obs(imu, states, prev_actions):
         if motor_id in states:
             joint_pos[i], joint_vel[i] = states[motor_id]
 
-    # right_hip_pitch (index 5): hardware encoder sign is inverted vs IsaacLab URDF
-    # IsaacLab: positive = forward swing. Hardware: positive = backward swing.
-    joint_pos[5] = -joint_pos[5]
-    joint_vel[5] = -joint_vel[5]
-
     joint_vel_scaled = joint_vel * 0.05
     vel_cmd = np.zeros(3, dtype=np.float32)  # stand still
 
@@ -395,8 +390,6 @@ def main():
         drain(bus)
         for i, (_, motor_id) in enumerate(JOINT_ORDER):
             target = float(actions[i]) * ACTION_SCALE
-            if i == 5:  # right_hip_pitch: hardware sign is inverted vs IsaacLab
-                target = -target
             if abs(target) > MAX_TARGET_RAD:
                 jname = JOINT_ORDER[i][0]
                 print(f"\n[SAFETY] Target for {jname} = {target:.3f} rad "
