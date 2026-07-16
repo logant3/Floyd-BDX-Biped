@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 
 # ── Network shape (must match rsl_rl_ppo_cfg.py) ──────────────────────────────
-OBS_DIM        = 35
+OBS_DIM        = 33
 ACTION_DIM     = 8
 HIDDEN_DIMS    = [512, 256, 128]
 ACTIVATION     = nn.ELU

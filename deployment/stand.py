@@ -83,7 +83,7 @@ STANDUP_KP = {mid: kp * 1.5 for mid, kp in POLICY_KP.items()}
 STANDUP_KD = {mid: kd       for mid, kd in POLICY_KD.items()}
 
 ACTION_SCALE = 0.5
-OBS_DIM      = 35
+OBS_DIM      = 33
 
 # IMU — Floyd hardware defaults (Qwiic, bus 7, SA0=VCC → 0x6B)
 FLOYD_MOUNTING_ROTATION = np.array([
@@ -185,10 +185,10 @@ def build_obs(imu, states, prev_actions):
     obs = np.concatenate([
         ang_vel.astype(np.float32),
         proj_grav.astype(np.float32),
+        vel_cmd,
         joint_pos,
         joint_vel_scaled,
         prev_actions,
-        vel_cmd,
     ])
     assert obs.shape[0] == OBS_DIM, f"obs dim mismatch: {obs.shape[0]} != {OBS_DIM}"
     return obs
