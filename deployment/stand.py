@@ -285,9 +285,21 @@ def main():
         time.sleep(0.02)
         read_motor_states(bus, motor_states)
 
+    # ── Verify all motors responded ──────────────────────────────────────────
+    missing = [mid for mid in MOTOR_NAMES if mid not in motor_states]
+    if missing:
+        print(f"\n[ABORT] Motors not responding after 50 poll cycles:")
+        for mid in missing:
+            print(f"         Motor {mid} ({MOTOR_NAMES[mid]}): no CAN frames received")
+        print("         Check CAN connection and motor power before retrying.")
+        disable_all(bus)
+        imu.stop()
+        bus.shutdown()
+        return
+
     start_pos = {}
     for mid in MOTOR_NAMES:
-        start_pos[mid] = motor_states.get(mid, (0.0, 0.0))[0]
+        start_pos[mid] = motor_states[mid][0]
         print(f"   Motor {mid} ({MOTOR_NAMES[mid]:<18s}): start pos = {start_pos[mid]:.3f} rad")
 
     # ── Encoder sanity check ──────────────────────────────────────────────────
