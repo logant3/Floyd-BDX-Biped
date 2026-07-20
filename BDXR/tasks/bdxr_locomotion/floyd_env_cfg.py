@@ -26,7 +26,7 @@ class FloydRewards(RewardsCfg):
 
     air_time = RewTerm(
         func=floyd_mdp.feet_air_time_touchdown,
-        weight=8.0,
+        weight=12.0,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FOOT_BODIES),
             "threshold_min": 0.2,
@@ -111,7 +111,7 @@ class FloydRewards(RewardsCfg):
 
     stance_ankle_deviation = RewTerm(
         func=floyd_mdp.stance_ankle_deviation_penalty,
-        weight=-5.0,
+        weight=-15.0,
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["left_ankle", "right_ankle"]),
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FOOT_BODIES),
@@ -121,7 +121,7 @@ class FloydRewards(RewardsCfg):
 
     swing_ankle_deviation = RewTerm(
         func=floyd_mdp.swing_ankle_deviation_penalty,
-        weight=-8.0,
+        weight=-15.0,
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["left_ankle", "right_ankle"]),
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=FOOT_BODIES),
@@ -131,7 +131,7 @@ class FloydRewards(RewardsCfg):
 
     foot_step_symmetry = RewTerm(
         func=floyd_mdp.foot_step_symmetry_penalty,
-        weight=-8.0,
+        weight=-16.0,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=FOOT_BODIES),
         },
@@ -139,7 +139,7 @@ class FloydRewards(RewardsCfg):
 
     yaw_foot_flat = RewTerm(
         func=floyd_mdp.yaw_turn_foot_orientation_penalty,
-        weight=-5.0,
+        weight=-8.0,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=["FootBaseLeft", "FootBaseRight"]),
             "yaw_threshold": 0.3,
@@ -165,10 +165,10 @@ class FloydRewards(RewardsCfg):
 
     torque_symmetry = RewTerm(
         func=floyd_mdp.joint_torque_symmetry_penalty,
-        weight=-0.15,
+        weight=-1.0,
         params={
-            "left_cfg":  SceneEntityCfg("robot", joint_names=["left_knee", "left_ankle"]),
-            "right_cfg": SceneEntityCfg("robot", joint_names=["right_knee", "right_ankle"]),
+            "left_cfg":  SceneEntityCfg("robot", joint_names=["left_knee", "left_ankle", "left_hip_roll", "left_hip_pitch"]),
+            "right_cfg": SceneEntityCfg("robot", joint_names=["right_knee", "right_ankle", "right_hip_roll", "right_hip_pitch"]),
         },
     )
 
@@ -205,11 +205,17 @@ class FloydEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.events.physics_material.params["static_friction_range"] = (0.2, 1.25)
         self.events.physics_material.params["dynamic_friction_range"] = (0.2, 1.25)
 
-        self.events.push_robot = None
+        # Push perturbation — teach policy to catch itself after disturbances
+        self.events.push_robot.params["velocity_range"] = {"x": (-0.5, 0.5), "y": (-0.5, 0.5)}
 
         self.events.add_base_mass.params["asset_cfg"].body_names = [BASE_BODY]
         self.events.add_base_mass.params["mass_distribution_params"] = (-0.2, 0.5)
-        self.events.reset_robot_joints.params["position_range"] = (0.8, 1.2)
+        # reset_joints_by_scale multiplies default_pos (all 0.0) → always resets to 0.0.
+        # Use reset_joints_by_offset so each episode starts with ±0.1 rad joint noise,
+        # matching the encoder offsets Floyd will have on real hardware after zeroing.
+        self.events.reset_robot_joints.func = mdp.reset_joints_by_offset
+        self.events.reset_robot_joints.params["position_range"] = (-0.03, 0.03)
+        self.events.reset_robot_joints.params["velocity_range"] = (0.0, 0.0)
         self.events.base_external_force_torque.params["asset_cfg"].body_names = [BASE_BODY]
         self.events.reset_base.params = {
             "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
@@ -230,11 +236,11 @@ class FloydEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.rewards.dof_torques_l2.weight = -1.5e-5
         self.rewards.track_lin_vel_xy_exp.weight = 5.0
         self.rewards.track_ang_vel_z_exp.weight = 5.0
-        self.rewards.action_rate_l2.weight = -0.5
+        self.rewards.action_rate_l2.weight = -0.7
         self.rewards.dof_acc_l2.weight = -1.25e-7
         self.rewards.lin_vel_z_l2.weight = -2.0
         self.rewards.ang_vel_xy_l2.weight = -0.3
-        self.rewards.flat_orientation_l2.weight = -5.0
+        self.rewards.flat_orientation_l2.weight = -15.0
 
         self.commands.base_velocity = UniformVelocityCommandCfg(
             asset_name="robot",

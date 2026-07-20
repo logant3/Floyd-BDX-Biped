@@ -1,8 +1,8 @@
 # hold_zero.py — Floyd
 # Adapted from Kayden's stand.py
 # Enables all 8 motors and holds them at 0.0 rad (zero pose).
-# Use this to verify zeroing worked and that Floyd can stand on his own.
-# Ctrl+C to stop and disable.
+# Prints per-motor torque and implied phase current every 0.5s.
+# Ctrl+C to stop and disable all motors.
 
 import can
 import time
@@ -21,9 +21,14 @@ CAN_CONFIGS = [
     # 7=right_hip_roll   8=left_hip_roll
 ]
 
+MOTOR_NAMES = {
+    1: 'right_ankle',    2: 'left_ankle',
+    3: 'right_knee',     4: 'left_knee',
+    5: 'right_hip_pitch',6: 'left_hip_pitch',
+    7: 'right_hip_roll', 8: 'left_hip_roll',
+}
+
 # Gains from floyd_deployment_config_template.yaml
-# RS02 ankles (1,2): kp=16.581, kd=1.056
-# RS03 hips+knees (3-8): kp=78.957, kd=5.027
 MOTOR_GAINS = {
     1: {'kp': 16.581, 'kd': 1.056},   # right_ankle  (RS02)
     2: {'kp': 16.581, 'kd': 1.056},   # left_ankle   (RS02)
@@ -35,10 +40,23 @@ MOTOR_GAINS = {
     8: {'kp': 78.957, 'kd': 5.027},   # left_hip_roll   (RS03)
 }
 
+# Torque constants for implied current: I (Arms) = torque (Nm) / Kt
+MOTOR_KT = {
+    1: 1.22,  # RS02
+    2: 1.22,  # RS02
+    3: 2.36,  # RS03
+    4: 2.36,  # RS03
+    5: 2.36,  # RS03
+    6: 2.36,  # RS03
+    7: 2.36,  # RS03
+    8: 2.36,  # RS03
+}
+
 # --- PROTOCOL CONSTANTS ---
 MUX_ENABLE  = 0x03
 MUX_CONTROL = 0x01
 MUX_DISABLE = 0x04
+MSG_FEEDBACK = 0x02
 
 # --- MOTOR PARAMETERS ---
 MOTOR_TYPE_PARAMS = {
@@ -59,18 +77,18 @@ MOTOR_TYPE_PARAMS = {
 }
 
 MOTOR_ID_TO_TYPE = {
-    1: 'O2',   # right_ankle
-    2: 'O2',   # left_ankle
-    3: 'O3',   # right_knee
-    4: 'O3',   # left_knee
-    5: 'O3',   # right_hip_pitch
-    6: 'O3',   # left_hip_pitch
-    7: 'O3',   # right_hip_roll
-    8: 'O3',   # left_hip_roll
+    1: 'O2', 2: 'O2',
+    3: 'O3', 4: 'O3',
+    5: 'O3', 6: 'O3',
+    7: 'O3', 8: 'O3',
 }
 
+# --- HELPERS ---
 def scale_to_u16(value, v_min, v_max):
     return int(65535.0 * (np.clip(value, v_min, v_max) - v_min) / (v_max - v_min))
+
+def unscale_u16(raw, v_min, v_max):
+    return (float(raw) / 65535.0) * (v_max - v_min) + v_min
 
 def send_control_command(bus, motor_id, pos, vel, kp, kd, torque, params):
     angle_u16  = scale_to_u16(pos,    params['P_MIN'],  params['P_MAX'])
@@ -87,9 +105,31 @@ def send_control_command(bus, motor_id, pos, vel, kp, kd, torque, params):
     except can.CanOperationError:
         pass
 
+def parse_feedback(buses, motor_states):
+    """Read all pending feedback frames and update motor_states with torque."""
+    for interface, motor_ids in CAN_CONFIGS:
+        if interface not in buses:
+            continue
+        bus = buses[interface]
+        while True:
+            msg = bus.recv(timeout=0)
+            if msg is None:
+                break
+            if msg.is_error_frame or len(msg.data) < 8:
+                continue
+            msg_type = (msg.arbitration_id & 0x1F000000) >> 24
+            motor_id = (msg.arbitration_id & 0xFF00) >> 8
+            if msg_type != MSG_FEEDBACK or motor_id not in motor_states:
+                continue
+            params = MOTOR_TYPE_PARAMS[MOTOR_ID_TO_TYPE[motor_id]]
+            torque_raw = struct.unpack('>H', msg.data[4:6])[0]
+            torque_nm  = unscale_u16(torque_raw, params['T_MIN'], params['T_MAX'])
+            motor_states[motor_id]['torque'] = torque_nm
+
 # --- MAIN ---
 if __name__ == "__main__":
     buses = {}
+    motor_states = {mid: {'torque': 0.0} for mid in MOTOR_NAMES}
 
     print("="*50)
     print("Floyd — Hold Zero Pose")
@@ -113,17 +153,34 @@ if __name__ == "__main__":
 
         time.sleep(1.0)
 
-        # Hold at zero
-        print("\n[2] Holding at 0.0 rad. Press Ctrl+C to stop.")
+        print("\n[2] Holding at 0.0 rad. Press Ctrl+C to stop.\n")
+
+        last_print = time.time()
+        PRINT_INTERVAL = 0.5  # seconds between status prints
+
         while True:
+            # Send control commands
             for interface, motor_ids in CAN_CONFIGS:
                 bus = buses[interface]
-                while bus.recv(timeout=0) is not None:
-                    pass
                 for mid in motor_ids:
                     params = MOTOR_TYPE_PARAMS[MOTOR_ID_TO_TYPE[mid]]
                     gains  = MOTOR_GAINS[mid]
                     send_control_command(bus, mid, 0.0, 0.0, gains['kp'], gains['kd'], 0.0, params)
+
+            # Parse feedback frames that arrived
+            parse_feedback(buses, motor_states)
+
+            # Print status every 0.5s
+            now = time.time()
+            if now - last_print >= PRINT_INTERVAL:
+                print("-" * 58)
+                for mid in sorted(MOTOR_NAMES):
+                    name    = MOTOR_NAMES[mid]
+                    torque  = motor_states[mid]['torque']
+                    current = abs(torque) / MOTOR_KT[mid]
+                    print(f"  Motor {mid}  {name:<18s}  {torque:+6.2f} Nm  {current:.3f} A")
+                last_print = now
+
             time.sleep(0.0025)  # 400 Hz
 
     except KeyboardInterrupt:
