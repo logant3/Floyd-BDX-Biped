@@ -171,6 +171,7 @@ def read_motor_states(bus, states):
             continue
         p = MOTOR_TYPE_PARAMS[MOTOR_ID_TO_TYPE[motor_id]]
         pos = _unscale(struct.unpack(">H", msg.data[0:2])[0], p["P_MIN"], p["P_MAX"])
+        pos = (pos + math.pi) % (2 * math.pi) - math.pi  # wrap to (-π, π]
         vel = _unscale(struct.unpack(">H", msg.data[2:4])[0], p["V_MIN"], p["V_MAX"])
         states[motor_id] = (pos, vel)
 
