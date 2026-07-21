@@ -247,7 +247,7 @@ class FloydEnvCfg(LocomotionVelocityRoughEnvCfg):
             resampling_time_range=(10.0, 10.0),
             rel_standing_envs=0.02,
             rel_heading_envs=0.0,
-            heading_command=True,
+            heading_command=False,  # direct ang_vel_z command → rotate in place
             debug_vis=True,
             ranges=UniformVelocityCommandCfg.Ranges(
                 lin_vel_x=(-0.3, 0.5),
