@@ -489,10 +489,16 @@ def main():
         for i, (_, motor_id) in enumerate(JOINT_ORDER):
             if motor_id not in active_motors:
                 continue
-            target = float(actions[i]) * ACTION_SCALE
-            if abs(target) > MAX_TARGET_RAD:
+            # Policy action is relative to standing pose (0.0 in IsaacLab).
+            # On hardware, standing pose = standup_targets[motor_id] in the motor's
+            # raw encoder frame (may be 0.0 or ±2π depending on power-on position).
+            # Add the frame offset so the motor stays near its physical zero.
+            frame_offset = standup_targets[motor_id]
+            target = frame_offset + float(actions[i]) * ACTION_SCALE
+            delta = float(actions[i]) * ACTION_SCALE  # for safety check
+            if abs(delta) > MAX_TARGET_RAD:
                 jname = JOINT_ORDER[i][0]
-                print(f"\n[SAFETY] Target for {jname} = {target:.3f} rad "
+                print(f"\n[SAFETY] Target for {jname} = {delta:.3f} rad "
                       f"exceeds ±{MAX_TARGET_RAD} rad. Entering damping mode.")
                 in_damping = True
                 break
