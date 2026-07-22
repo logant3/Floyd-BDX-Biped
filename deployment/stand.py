@@ -118,6 +118,19 @@ def _scale(val, v_min, v_max):
 def _unscale(raw, v_min, v_max):
     return float(raw) / 65535.0 * (v_max - v_min) + v_min
 
+def _wrap_angle(v):
+    """Wrap angle to (-π, π] for display and observation use only.
+    Never apply this to positions used as motor commands — commands must
+    stay in the motor's own reference frame."""
+    return (v + math.pi) % (2 * math.pi) - math.pi
+
+def _nearest_zero(pos):
+    """The equivalent of 0.0 rad closest to pos in the motor's frame.
+    Handles single-turn encoder wrapping: a motor physically at -0.12 rad
+    may report 6.16 rad (≈ 2π - 0.12). Its standup target is 2π, not 0.0."""
+    candidates = [0.0, 2 * math.pi, -2 * math.pi]
+    return min(candidates, key=lambda c: abs(pos - c))
+
 def send_mit(bus, motor_id, pos, vel, kp, kd, torque):
     p = MOTOR_TYPE_PARAMS[MOTOR_ID_TO_TYPE[motor_id]]
     a = _scale(pos,    p["P_MIN"], p["P_MAX"])
@@ -171,7 +184,6 @@ def read_motor_states(bus, states):
             continue
         p = MOTOR_TYPE_PARAMS[MOTOR_ID_TO_TYPE[motor_id]]
         pos = _unscale(struct.unpack(">H", msg.data[0:2])[0], p["P_MIN"], p["P_MAX"])
-        pos = (pos + math.pi) % (2 * math.pi) - math.pi  # wrap to (-π, π]
         vel = _unscale(struct.unpack(">H", msg.data[2:4])[0], p["V_MIN"], p["V_MAX"])
         states[motor_id] = (pos, vel)
 
@@ -201,7 +213,9 @@ def build_obs(imu, states, prev_actions):
     joint_vel = np.zeros(8, dtype=np.float32)
     for i, (_, motor_id) in enumerate(JOINT_ORDER):
         if motor_id in states:
-            joint_pos[i], joint_vel[i] = states[motor_id]
+            raw_pos, vel = states[motor_id]
+            joint_pos[i] = _wrap_angle(raw_pos)  # wrap to (-π, π] to match IsaacLab training range
+            joint_vel[i] = vel
 
     joint_vel_scaled = joint_vel * 0.05
     vel_cmd = np.zeros(3, dtype=np.float32)  # stand still
@@ -227,7 +241,19 @@ def main():
     parser.add_argument("--i2c_bus", type=int,   default=7,     help="I2C bus for IMU (default 7)")
     parser.add_argument("--ctrl_hz", type=float, default=400.0, help="CAN loop rate Hz (default 400)")
     parser.add_argument("--no_imu",  action="store_true",       help="Mock IMU (debug only)")
+    parser.add_argument("--motors",  type=int,   nargs="+",     help="Only use these motor IDs (e.g. --motors 2 for left ankle only)")
     args = parser.parse_args()
+
+    # Restrict active motors if --motors specified
+    if args.motors:
+        invalid = [m for m in args.motors if m not in MOTOR_NAMES]
+        if invalid:
+            print(f"[ERROR] Unknown motor IDs: {invalid}. Valid IDs: {list(MOTOR_NAMES.keys())}")
+            return
+        active_motors = {mid: MOTOR_NAMES[mid] for mid in args.motors}
+        print(f"[TEST MODE] Only using motors: { {mid: MOTOR_NAMES[mid] for mid in args.motors} }")
+    else:
+        active_motors = MOTOR_NAMES
 
     CTRL_DT    = 1.0 / args.ctrl_hz
     DECIMATION = int(round(args.ctrl_hz / 50))  # policy runs at 50 Hz
@@ -281,17 +307,17 @@ def main():
     # Poll to get initial positions
     motor_states = {}
     for _ in range(50):
-        for mid in MOTOR_NAMES:
+        for mid in active_motors:
             send_mit(bus, mid, 0.0, 0.0, 0.0, 0.0, 0.0)
         time.sleep(0.02)
         read_motor_states(bus, motor_states)
 
     # ── Verify all motors responded ──────────────────────────────────────────
-    missing = [mid for mid in MOTOR_NAMES if mid not in motor_states]
+    missing = [mid for mid in active_motors if mid not in motor_states]
     if missing:
         print(f"\n[ABORT] Motors not responding after 50 poll cycles:")
         for mid in missing:
-            print(f"         Motor {mid} ({MOTOR_NAMES[mid]}): no CAN frames received")
+            print(f"         Motor {mid} ({active_motors[mid]}): no CAN frames received")
         print("         Check CAN connection and motor power before retrying.")
         disable_all(bus)
         imu.stop()
@@ -299,14 +325,21 @@ def main():
         return
 
     start_pos = {}
-    for mid in MOTOR_NAMES:
-        start_pos[mid] = motor_states[mid][0]
-        print(f"   Motor {mid} ({MOTOR_NAMES[mid]:<18s}): start pos = {start_pos[mid]:.3f} rad")
+    for mid in active_motors:
+        raw = motor_states[mid][0]
+        start_pos[mid] = raw
+        wrapped = _wrap_angle(raw)
+        print(f"   Motor {mid} ({active_motors[mid]:<18s}): start pos = {raw:.3f} rad  (wrapped: {wrapped:+.3f})")
+
+    # Standup targets: nearest equivalent of 0 in each motor's raw frame.
+    # e.g. a motor at 6.16 rad targets 2π (0.12 rad movement), not 0.0 (6.16 rad movement).
+    standup_targets = {mid: _nearest_zero(start_pos[mid]) for mid in active_motors}
 
     # ── Encoder sanity check ──────────────────────────────────────────────────
     print()
-    all_near_zero = all(abs(v) < 0.05 for v in start_pos.values())
-    out_of_range  = {mid: v for mid, v in start_pos.items() if abs(v) > 2.0}
+    wrapped_pos = {mid: _wrap_angle(v) for mid, v in start_pos.items()}
+    all_near_zero = all(abs(v) < 0.05 for v in wrapped_pos.values())
+    out_of_range  = {mid: v for mid, v in wrapped_pos.items() if abs(v) > 2.0}
 
     if all_near_zero:
         print("[WARNING] All encoders read near 0.0 rad.")
@@ -317,7 +350,7 @@ def main():
     if out_of_range:
         print("[ABORT] Joint(s) outside ±2.0 rad — encoder error or bad mounting:")
         for mid, v in out_of_range.items():
-            print(f"         Motor {mid} ({MOTOR_NAMES[mid]}): {v:+.3f} rad")
+            print(f"         Motor {mid} ({active_motors[mid]}): {v:+.3f} rad")
         print()
         disable_all(bus)
         imu.stop()
@@ -336,7 +369,7 @@ def main():
 
     while not standup_event.is_set() and not _quit[0]:
         drain(bus)
-        for mid in MOTOR_NAMES:
+        for mid in active_motors:
             send_mit(bus, mid, 0.0, 0.0, 0.0, 0.0, 0.0)
         read_motor_states(bus, motor_states)
         time.sleep(0.02)
@@ -348,7 +381,12 @@ def main():
         bus.shutdown()
         return
 
-    # ── Standup: interpolate to zero over 2s ──────────────────────────────────
+    # ── Standup: interpolate to zero over 2s with KP ramp ────────────────────
+    # KP starts very low (soft/compliant) and ramps to full standup KP as the
+    # motor approaches its target. This prevents large torque spikes if the
+    # starting position is slightly off.
+    STANDUP_KP_START = 5.0   # gentle initial gain for all motors
+    STANDUP_KD_START = 0.2   # gentle initial damping
     print("\n  Moving to zero pose (2s)...")
     STANDUP_STEPS = int(2.0 / 0.02)
     for step in range(STANDUP_STEPS + 1):
@@ -356,9 +394,11 @@ def main():
             break
         alpha = step / STANDUP_STEPS
         drain(bus)
-        for mid in MOTOR_NAMES:
-            target = (1.0 - alpha) * start_pos[mid]
-            send_mit(bus, mid, target, 0.0, STANDUP_KP[mid], STANDUP_KD[mid], 0.0)
+        for mid in active_motors:
+            target = (1.0 - alpha) * start_pos[mid] + alpha * standup_targets[mid]
+            kp = STANDUP_KP_START + alpha * (STANDUP_KP[mid] - STANDUP_KP_START)
+            kd = STANDUP_KD_START + alpha * (STANDUP_KD[mid] - STANDUP_KD_START)
+            send_mit(bus, mid, target, 0.0, kp, kd, 0.0)
         read_motor_states(bus, motor_states)
         time.sleep(0.02)
 
@@ -388,8 +428,8 @@ def main():
 
     while not enter_event.is_set() and not _quit[0]:
         drain(bus)
-        for mid in MOTOR_NAMES:
-            send_mit(bus, mid, 0.0, 0.0, STANDUP_KP[mid], STANDUP_KD[mid], 0.0)
+        for mid in active_motors:
+            send_mit(bus, mid, standup_targets[mid], 0.0, STANDUP_KP[mid], STANDUP_KD[mid], 0.0)
         read_motor_states(bus, motor_states)
         time.sleep(0.02)
 
@@ -447,6 +487,8 @@ def main():
         # ── Safety: clamp targets, enter damping if wildly out of range ───────
         drain(bus)
         for i, (_, motor_id) in enumerate(JOINT_ORDER):
+            if motor_id not in active_motors:
+                continue
             target = float(actions[i]) * ACTION_SCALE
             if abs(target) > MAX_TARGET_RAD:
                 jname = JOINT_ORDER[i][0]
