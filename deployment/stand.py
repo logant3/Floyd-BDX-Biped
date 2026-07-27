@@ -447,9 +447,17 @@ def main():
     # ── Policy loop ──────────────────────────────────────────────────────────
     print("  Policy active. Ctrl+C to stop.\n")
 
-    prev_actions   = np.zeros(8, dtype=np.float32)
-    actions        = np.zeros(8, dtype=np.float32)
-    it             = 0
+    # Within-decimation interpolation (mirrors Kayden's interface.py):
+    #   prev_policy_out    — raw policy output from the PREVIOUS 50 Hz step (interp start)
+    #   current_policy_out — raw policy output from the CURRENT  50 Hz step (interp end)
+    #   obs_prev_actions   — what goes into the obs; always the last raw policy output
+    #                        so the policy sees exactly what it saw in training.
+    # Motors ramp linearly from prev → current over the 8 CAN steps between policy calls,
+    # eliminating the sudden position jumps that were causing KP-amplified shaking.
+    prev_policy_out    = np.zeros(8, dtype=np.float32)
+    current_policy_out = np.zeros(8, dtype=np.float32)
+    obs_prev_actions   = np.zeros(8, dtype=np.float32)
+    it                 = 0
     last_print     = time.time()
     t_last         = time.perf_counter()
     in_damping     = False
@@ -480,9 +488,18 @@ def main():
 
         # ── Policy inference at 50 Hz ─────────────────────────────────────────
         if it % DECIMATION == 0:
-            obs     = build_obs(imu, motor_states, prev_actions)
-            actions = session.run(None, {input_name: obs.reshape(1, -1)})[0][0]
-            prev_actions = actions.copy()
+            obs = build_obs(imu, motor_states, obs_prev_actions)
+            prev_policy_out    = current_policy_out.copy()
+            current_policy_out = session.run(None, {input_name: obs.reshape(1, -1)})[0][0]
+            obs_prev_actions   = current_policy_out.copy()
+
+        # ── Interpolate within decimation window ──────────────────────────────
+        # alpha goes 0→1 over the 8 CAN steps between each policy call.
+        # At the start of each window (alpha=0) we send the previous policy output;
+        # by the end (alpha=1) we've smoothly reached the new output.
+        step_in_window = it % DECIMATION
+        alpha = step_in_window / float(DECIMATION - 1) if DECIMATION > 1 else 1.0
+        interp_actions = (1.0 - alpha) * prev_policy_out + alpha * current_policy_out
 
         # ── Safety: clamp targets, enter damping if wildly out of range ───────
         drain(bus)
@@ -494,8 +511,8 @@ def main():
             # raw encoder frame (may be 0.0 or ±2π depending on power-on position).
             # Add the frame offset so the motor stays near its physical zero.
             frame_offset = standup_targets[motor_id]
-            target = frame_offset + float(actions[i]) * ACTION_SCALE
-            delta = float(actions[i]) * ACTION_SCALE  # for safety check
+            target = frame_offset + float(interp_actions[i]) * ACTION_SCALE
+            delta = float(interp_actions[i]) * ACTION_SCALE  # for safety check
             if abs(delta) > MAX_TARGET_RAD:
                 jname = JOINT_ORDER[i][0]
                 print(f"\n[SAFETY] Target for {jname} = {delta:.3f} rad "
@@ -512,7 +529,7 @@ def main():
             imu_data = imu.get_latest_data()
             pg = imu_data["projected_gravity"]
             print(f"  iter {it:6d} | proj_grav [{pg[0]:+.3f}, {pg[1]:+.3f}, {pg[2]:+.3f}] "
-                  f"| actions max {np.abs(actions).max():.3f}")
+                  f"| actions max {np.abs(current_policy_out).max():.3f}")
             last_print = now
 
         # ── Pace to ctrl_hz ───────────────────────────────────────────────────
