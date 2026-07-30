@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--
+  bench_motor.urdf — Minimal single-joint robot for actuator bench testing.
+  Represents a Robstride motor (RS02 or RS03) mounted on a fixed base with
+  nothing attached to the output shaft — just the output flange.
+
+  The link inertia is intentionally tiny (0.01 kg, I=1e-6 kg·m²) so the
+  simulation dynamics are dominated by the actuator armature value, matching
+  real bench conditions where only the rotor inertia matters.
+
+  Joint axis: Z (rotation in the XY plane, matching IsaacLab convention).
+  Limits are wide (±4 rad) to cover the test range without clamping.
+-->
+<robot name="bench_motor">
+
+  <!-- Fixed base, attached to world -->
+  <link name="base_link">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0"
+               iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <geometry><box size="0.05 0.05 0.05"/></geometry>
+      <material name="grey"><color rgba="0.5 0.5 0.5 1"/></material>
+    </visual>
+    <collision>
+      <geometry><box size="0.05 0.05 0.05"/></geometry>
+    </collision>
+  </link>
+
+  <!-- Output shaft — tiny mass so dynamics are dominated by armature -->
+  <link name="output_link">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0.03 0 0" rpy="0 0 0"/>
+      <!-- I = 0.01 kg * 0.03^2 / 2 ≈ 4.5e-6 kg·m² — negligible vs armature -->
+      <inertia ixx="1e-6" ixy="0" ixz="0"
+               iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.025 0 0" rpy="0 1.5708 0"/>
+      <geometry><cylinder length="0.05" radius="0.01"/></geometry>
+      <material name="orange"><color rgba="0.9 0.5 0.1 1"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.025 0 0" rpy="0 1.5708 0"/>
+      <geometry><cylinder length="0.05" radius="0.01"/></geometry>
+    </collision>
+  </link>
+
+  <!-- Single revolute joint — the motor output -->
+  <joint name="bench_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="output_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-4.0" upper="4.0" effort="100.0" velocity="50.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+</robot>

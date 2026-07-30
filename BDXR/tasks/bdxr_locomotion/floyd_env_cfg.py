@@ -2,6 +2,7 @@ import math
 import os
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
 
@@ -210,6 +211,38 @@ class FloydEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         self.events.add_base_mass.params["asset_cfg"].body_names = [BASE_BODY]
         self.events.add_base_mass.params["mass_distribution_params"] = (-0.2, 0.5)
+
+        # --- Sim-to-real mass/inertia randomization (mirrors Skyentific PocLegs) ---
+        # Scale all link masses ±10% to cover attachment hardware, cable runs, etc.
+        self.events.scale_all_link_masses = EventTerm(
+            func=mdp.randomize_rigid_body_mass,
+            mode="startup",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
+                "mass_distribution_params": (0.9, 1.1),
+                "operation": "scale",
+            },
+        )
+        # Scale joint armature up to 5% — covers motor-to-motor rotor inertia variation
+        self.events.scale_all_joint_armature = EventTerm(
+            func=mdp.randomize_joint_parameters,
+            mode="startup",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[".*"]),
+                "armature_distribution_params": (1.0, 1.05),
+                "operation": "scale",
+            },
+        )
+        # Scale joint friction ±10% — covers varying lubrication, temperature, wear
+        self.events.scale_all_joint_friction = EventTerm(
+            func=mdp.randomize_joint_parameters,
+            mode="startup",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=[".*"]),
+                "friction_distribution_params": (0.9, 1.1),
+                "operation": "scale",
+            },
+        )
         # reset_joints_by_scale multiplies default_pos (all 0.0) → always resets to 0.0.
         # Use reset_joints_by_offset so each episode starts with ±0.1 rad joint noise,
         # matching the encoder offsets Floyd will have on real hardware after zeroing.

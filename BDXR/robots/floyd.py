@@ -56,7 +56,7 @@ FLOYD_CFG = ArticulationCfg(
             effort_limit_sim=60.0,
             velocity_limit_sim=18.849,
             min_delay=0,
-            max_delay=0,
+            max_delay=2,  # physics steps; at 200Hz sim = 0-10ms, matches real CAN latency (~2-9ms)
         ),
         # RS02 joints (ankle)
         "legs_RS02": DelayedPDActuatorCfg(
@@ -67,7 +67,7 @@ FLOYD_CFG = ArticulationCfg(
             effort_limit_sim=17.0,
             velocity_limit_sim=37.699,
             min_delay=0,
-            max_delay=0,
+            max_delay=2,  # physics steps; at 200Hz sim = 0-10ms, matches real CAN latency (~2-9ms)
         ),
     },
     soft_joint_pos_limit_factor=0.95,
