@@ -454,10 +454,11 @@ def main():
     #                        so the policy sees exactly what it saw in training.
     # Motors ramp linearly from prev → current over the 8 CAN steps between policy calls,
     # eliminating the sudden position jumps that were causing KP-amplified shaking.
-    prev_policy_out    = np.zeros(8, dtype=np.float32)
-    current_policy_out = np.zeros(8, dtype=np.float32)
-    obs_prev_actions   = np.zeros(8, dtype=np.float32)
-    it                 = 0
+    prev_policy_out       = np.zeros(8, dtype=np.float32)
+    current_policy_out    = np.zeros(8, dtype=np.float32)
+    obs_prev_actions      = np.zeros(8, dtype=np.float32)
+    first_policy_inference = True
+    it                    = 0
     last_print     = time.time()
     t_last         = time.perf_counter()
     in_damping     = False
@@ -492,6 +493,11 @@ def main():
             prev_policy_out    = current_policy_out.copy()
             current_policy_out = session.run(None, {input_name: obs.reshape(1, -1)})[0][0]
             obs_prev_actions   = current_policy_out.copy()
+            if first_policy_inference:
+                # Skip the ramp on the very first window so the policy can
+                # apply corrective action immediately at activation.
+                prev_policy_out = current_policy_out.copy()
+                first_policy_inference = False
 
         # ── Interpolate within decimation window ──────────────────────────────
         # alpha goes 0→1 over the 8 CAN steps between each policy call.
